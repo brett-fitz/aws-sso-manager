@@ -47,7 +47,7 @@ All done!
 Whenever your tokens expire, you will need to run the command:
 
 ```shell
-aws-sso-manager login
+$ aws-sso-manager login
 ```
 
 ## Easy Profiles
