@@ -1,13 +1,13 @@
 # Example: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml
 
 # project info
-site_name: pycli
-site_url: https://pycli.repos.brettfitz.me/dev/
+site_name: aws-sso-manager
+site_url: https://aws-sso-manager.repos.brettfitz.me/dev/
 site_author: Brett Fitzpatrick
 
 # repository
-repo_name: brett-fitz/pycli
-repo_url: https://github.com/brett-fitz/python-cli/
+repo_name: brett-fitz/aws-sso-manager
+repo_url: https://github.com/brett-fitz/aws-sso-manager/
 
 # config
 theme:

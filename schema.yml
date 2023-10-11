@@ -1,0 +1,7 @@
+# default account
+default:
+  loginAccount: str(required=True)
+  ssoDomain: str(required=True)
+  region: str(required=True)
+
+role_priority: list(str(), required=True)

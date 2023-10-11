@@ -1,0 +1,1 @@
+"""awsssomanager.sso module: constants"""

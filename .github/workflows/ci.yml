@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - 'pycli/**'
+      - 'aws-sso-manager/**'
       - 'tests/**'
       - 'poetry.lock'
       - 'pyproject.toml'
@@ -15,7 +15,7 @@ on:
     branches:
       - main
     paths:
-      - 'pycli/**'
+      - 'aws-sso-manager/**'
       - 'tests/**'
       - 'poetry.lock'
       - 'pyproject.toml'
@@ -43,13 +43,13 @@ jobs:
           architecture: x64
           cache: poetry
 
-      - name: Install pycli
+      - name: Install aws-sso-manager
         run: poetry install --no-interaction --no-ansi
 
       # Commented out for template
       #
       # - name: Run Tests
-      #   run: poetry run pytest --cov pycli
+      #   run: poetry run pytest --cov aws-sso-manager
 
       # - name: Upload coverage reports to Codecov
       #   uses: codecov/codecov-action@v3

@@ -1,93 +1,87 @@
-# Python CLI Template
+# aws-sso-manager
 
-[![License](https://img.shields.io/github/license/brett-fitz/python-cli?style=flat-square)](https://github.com/brett-fitz/python-cli/blob/main/LICENSE)
-[![Issues](https://img.shields.io/github/issues/brett-fitz/python-cli?style=flat-square)](https://github.com/brett-fitz/python-cli/issues)
+[![License](https://img.shields.io/github/license/brett-fitz/aws-sso-manager?style=flat-square)](https://github.com/brett-fitz/aws-sso-manager/blob/main/LICENSE)
+[![Issues](https://img.shields.io/github/issues/brett-fitz/aws-sso-manager?style=flat-square)](https://github.com/brett-fitz/aws-sso-manager/issues)
 
-Simple Python CLI template with...
-
-* Click
-* Mkdocs
-* Poetry
-* Renovate
+Simple AWS SSO Manager that makes authenticating between multiple profiles and roles a breeze. 
 
 ## Overview
 
-`pycli` - Both the cli and package are named **pycli**. Poetry requires the package
-name to match the project name or it must be included in the packages section.
+`aws-sso-manager` is a simple cli to manage auth for aws sso accounts and roles. 
 
-### :package: Poetry
+## Setup
 
-Poetry is used for dependency management and packaging. [Poetry Docs](https://python-poetry.org/docs/)
-
-#### Dependency Groups
-
-**Dev**
-
-Developer dependencies that are not required for the code to run in production.
-
-**Docs**
-
-Dependencies for building documentation with mkdocs.
-
-**Test**
-
-Unitesting dependencies.
-
-### :arrow_up: Renovate
-
-Renovate is used for automating the management of dependencies including git submodules.
-The current config is setup to **open PRs every weekend**.
-
-#### Auto-Approval/Merge of Minor Updates
-
-The current config is setup to automerge specific updates that are deemed unlikely to cause conflicts.
-
-```
-["minor", "patch", "pin", "digest"]
+```shell
+pip3 install awsssomanager
+or
+poetry add awsssomanager
 ```
 
-##### Recommended Setup for Auto-Approval
+### Config file
 
-In order to ensure that minor dependency updates do not cause issues and **Continuous Delivery**
-can be applied without the need of a developer approval, the following setup should be implemented:
+Create a config file. You can create a config file for each `ssoDomain`.
 
-**Implement Branch Protection Rules**
+```yaml
+default:
+    loginAccount: '1234567890'
+    ssoDomain: 'myssodomain'
+    region: 'us-east-1'
 
-* Require a pull request before merging
-  * Require Approvals (1)
-* Require status checks to pass before merging
-* Require converstation resolution before merging
+role_priority:
+  - "ViewOnlyAccess"
+  - "PowerUserAccess"
+  - "PowerUserPlus"
+  - "AdministratorAccess"
+```
 
-**Add Unittests**
+### Configure ssoDomain
 
-Utilizing either pytest, unittests, or comparable unittesting framework, implement unittests that 
-provide effective coverage across the package codebase.
+```shell
+$ aws-sso-manager configure /path/to/config/file
+```
 
-**GitHub Actions**
+All done!
 
-Use the github action example to execute unittests using a matrix of supported python versions
-for the project to ensure operability.
+## Daily Operation
 
-**Add renovate-approve bot**
+Whenever your tokens expire, you will need to run the command:
 
-In order to successfully pass the branch protection rule, "Require Approvals (1)", we must have a
-user or bot approve the PRs we want to automerge. Thankfully renovate has provided a bot we can
-easily add to our repos to enable this feature:
+```shell
+aws-sso-manager login
+```
 
-https://github.com/apps/renovate-approve
+## Easy Profiles
 
-![Renovate auto-merge](docs/img/renovate-auto-merge.png)
+Profiles are automatically generated in the following formats and can be used directly after credentials are acquired:
 
-### Mkdocs
+```
+<account_id>_<role_name>
+<account_id>
+<account_name>
+```
 
-MkDocs is a static site generator for project documentation. Included with mkdocs is [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/getting-started/).
+### Usage
 
-#### Plugins
+```shell
+$ AWS_PROFILE=<proile_name> aws s3 ls
+```
 
-* search - Add search to your documentation.
-* mkdocstrings - Automated documentation of your code.
-* table-reader - Insert CSVs and other table formats with ease.
-* minify - A mkdocs plugin to minify the HTML of a page before it is written to disk.
+**Example**
+
+```shell
+1234567890 = dev
+
+$ AWS_PROFILE=dev aws s3 ls
+$ AWS_PROFILE=1234567890 aws s3 ls
+$ AWS_PROFILE=1234567890_AdministratorAccess aws s3 ls
+```
+
+### Python
+
+```python
+AWS_AIOSESSION = AioSession(profile='dev')
+AWS_SESSION = Session(profile_name='dev')
+```
 
 ## Help :construction_worker:
 
@@ -95,7 +89,7 @@ MkDocs is a static site generator for project documentation. Included with mkdoc
 I use GitHub Discussions to talk about all sorts of topics related to this repo.
 
 #### Open an issue
-First, check out the [existing issues](https://github.com/brett-fitz/python-cli/issues). If you spot
+First, check out the [existing issues](https://github.com/brett-fitz/aws-sso-manager/issues). If you spot
 something new, open an issue. We'll use the issue to have a conversation about the problem you want
 to fix, and I'll try to get to it as soon as I can.
 

@@ -1,0 +1,2 @@
+"""awsssomanager.cli module"""
+

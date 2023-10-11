@@ -3,14 +3,14 @@
 Clone the repo
 
 ```shell
-git clone git@github.com:brett-fitz/python-cli.git
+git clone git@github.com:brett-fitz/aws-sso-manager.git
 ```
 
-Install the pycli package and CLI
+Install the aws-sso-manager package and CLI
 
 === "General"
 
-    Install pycli
+    Install aws-sso-manager
 
     ```shell
     poetry install
@@ -24,17 +24,17 @@ Install the pycli package and CLI
     poetry env use 3.11
     ```
 
-    Install pycli
+    Install aws-sso-manager
 
     ```shell
     poetry install
     ```
 
-Run `pycli`
+Run `aws-sso-manager`
 
 ```shell
-❯ poetry run pycli 
-Usage: pycli [OPTIONS] COMMAND [ARGS]...
+❯ poetry run aws-sso-manager 
+Usage: aws-sso-manager [OPTIONS] COMMAND [ARGS]...
 
   Python CLI Core
 
