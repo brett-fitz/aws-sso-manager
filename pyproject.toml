@@ -16,7 +16,7 @@ yamale = "^4.0.4"
 
 
 [tool.poetry.group.dev.dependencies]
-pylint = "^3.0.0"
+pylint = "^3.0.1"
 
 
 [tool.poetry.group.test.dependencies]
