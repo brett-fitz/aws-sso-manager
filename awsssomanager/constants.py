@@ -6,7 +6,6 @@ __all__ = [
     "AWS_DIR",
     "CREDENTIALS_FILE",
     "SSO_MANAGER_CONFIG_FILE",
-    "REPO_DIR_PATH",
     "SCHEMA_PATH"
 ]
 
@@ -26,5 +25,4 @@ def find_repo_root(path: str) -> Path:
 
     raise ValueError("Could not find .git folder")
 
-REPO_DIR_PATH: Final = find_repo_root(__file__)
-SCHEMA_PATH: Final = Path(REPO_DIR_PATH, "schema.yml")
+SCHEMA_PATH: Final = Path("config/schema.yml")
