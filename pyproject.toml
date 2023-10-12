@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "awsssomanager"
-version = "0.1.2"
+version = "0.1.3"
 description = "AWS SSO Manager"
 authors = ["Brett Fitzpatrick"]
 license = "MIT"
