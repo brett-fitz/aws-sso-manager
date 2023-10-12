@@ -1,11 +1,12 @@
 """aws-sso-manager sso module: roles"""
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 import configparser
 import logging
 import time
-from typing import Dict, List
+from typing import Dict
 
 import boto3
+import botocore
 
 from awsssomanager import CREDENTIALS_FILE
 from awsssomanager.config import AWSSSOManagerConfig
@@ -75,7 +76,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
         None
     """
     credentials = load_credentials()
-    sso_client = boto3.client("sso", region_name="us-east-1")
+    sso_client = boto3.client("sso-oidc", region_name="us-east-1")
     token_expires_at = float(config.config["default"].get("accessTokenExpiresAt", "0"))
     access_token = config.config["default"].get("accessToken", "")
 
@@ -120,7 +121,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
             with ThreadPoolExecutor(max_workers=10) as pool:
                 pool.map(
                     lambda role: update_credentials_for_role(
-                        new_credentials, accounts, role
+                        config, new_credentials, accounts, role
                     ),
                     roles,
                 )
@@ -142,6 +143,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
 
 
 def update_credentials_for_role(
+    config: AWSSSOManagerConfig,
     new_credentials: Dict,
     accounts_info: Dict,
     role: Dict
@@ -163,7 +165,7 @@ def update_credentials_for_role(
 
     # If the account id alias is already in credentials, check to see if we should override for higher priority
     if account_id in new_credentials:
-        if compare_roles(role_name, new_credentials[account_id]["aws_sso_role_name"]) > 0:
+        if compare_roles(config, role_name, new_credentials[account_id]["aws_sso_role_name"]) > 0:
             new_credentials[account_id] = new_credentials[profile_name].copy()
             new_credentials[account_name] = new_credentials[profile_name].copy()
     else:
