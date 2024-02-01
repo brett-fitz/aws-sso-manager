@@ -24,6 +24,24 @@ class AWSSSOManagerConfig:
         self.config: Dict = config
 
     @property
+    def access_token(self) -> str:
+        """Get the accessToken
+
+        Returns:
+            accessToken.
+        """
+        return self.config['default']['accessToken']
+
+    @property
+    def access_token_expires_at(self) -> float:
+        """Get the accessTokenExpiresAt
+
+        Returns:
+            accessTokenExpiresAt.
+        """
+        return float(self.config['default'].get('accessTokenExpiresAt', '0'))
+
+    @property
     def login_account(self) -> str:
         """Get the loginAccount
 
@@ -69,7 +87,7 @@ class AWSSSOManagerConfig:
         Returns:
             class instance.
         """
-        with open(config_file, 'r') as file:
+        with open(config_file, 'r', encoding='utf-8') as file:
             config = yaml.safe_load(file)
         return cls(config=config)
 
@@ -114,6 +132,6 @@ class AWSSSOManagerConfig:
     def write_config(self) -> None:
         """Write aws-sso-manger config file
         """
-        with open(SSO_MANAGER_CONFIG_FILE, 'w') as file:
+        with open(SSO_MANAGER_CONFIG_FILE, 'w', encoding='utf-8') as file:
             logger.info(f'writing config file {SSO_MANAGER_CONFIG_FILE}')
             yaml.safe_dump(self.config, file, default_flow_style=False)

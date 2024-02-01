@@ -7,6 +7,7 @@ import boto3
 
 from awsssomanager.config.config import AWSSSOManagerConfig
 
+
 __all__ = [
     "compare_roles",
     "get_roles_for_accounts",
@@ -50,23 +51,23 @@ def compare_roles(
     return 0
 
 
-def get_roles_for_accounts(accounts: List[Dict], access_token: str) -> List[Dict]:
+def get_roles_for_accounts(accounts: List[Dict], config: AWSSSOManagerConfig) -> List[Dict]:
     """Retrieve roles for a list of accounts.
 
     Args:
         accounts (List[Dict]): List of accounts.
-        access_token (str): The access token for authentication.
+        config (AWSSSOManagerConfig): AWSSSOManagerConfig.
 
     Returns:
         List[Dict]: List of roles.
     """
-    sso_client = boto3.client("sso", region_name="us-east-1")
+    sso_client = boto3.client("sso", region_name=config.region)
     roles = []
     list_roles_paginator = sso_client.get_paginator("list_account_roles")
 
     for account in accounts:
         page = list_roles_paginator.paginate(
-            accessToken=access_token, accountId=account["accountId"]
+            accessToken=config.access_token, accountId=account["accountId"]
         ).build_full_result()
         roles.extend(page["roleList"])
 
@@ -74,9 +75,9 @@ def get_roles_for_accounts(accounts: List[Dict], access_token: str) -> List[Dict
 
 
 def get_role_credentials(
-    role: Dict,
-    access_token: str,
-    accounts_info: Dict
+    accounts_info: Dict,
+    config: AWSSSOManagerConfig,
+    role: Dict
 ) -> Dict:
     """Retrieve credentials for a role.
 
@@ -88,11 +89,11 @@ def get_role_credentials(
     Returns:
         Dict: A dictionary containing role credentials.
     """
-    sso_client = boto3.client("sso", region_name="us-east-1")
+    sso_client = boto3.client("sso", region_name=config.region)
     account_id = role["accountId"]
 
     role_credentials = sso_client.get_role_credentials(
-        accessToken=access_token, accountId=account_id, roleName=role['roleName']
+        accessToken=config.access_token, accountId=account_id, roleName=role['roleName']
     )["roleCredentials"]
 
     return {

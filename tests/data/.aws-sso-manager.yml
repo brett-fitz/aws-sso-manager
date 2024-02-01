@@ -1,0 +1,10 @@
+default:
+    loginAccount: ''
+    ssoDomain: ''
+    region: 'us-east-2'
+
+role_priority:
+  - "ViewOnlyAccess"
+  - "PowerUserAccess"
+  - "PowerUserPlus"
+  - "AdministratorAccess"

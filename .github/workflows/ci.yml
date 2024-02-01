@@ -1,16 +1,10 @@
-name: 'CI: Pytest + Coverage'
+name: 'CI: Pytest, Codecov and PyPI Publish'
 
 on:
   # manual trigger
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'aws-sso-manager/**'
-      - 'tests/**'
-      - 'poetry.lock'
-      - 'pyproject.toml'
+  
+  # pull requests
   pull_request:
     branches:
       - main
@@ -20,8 +14,13 @@ on:
       - 'poetry.lock'
       - 'pyproject.toml'
 
+  # release
+  release:
+    types: [published]
+
 jobs:
-  # Build
+  
+  # Build, test and upload codecov report
   python-test:
     name: pytest
     runs-on: ${{ matrix.os }}
@@ -43,16 +42,36 @@ jobs:
           architecture: x64
           cache: poetry
 
-      - name: Install aws-sso-manager
+      - name: Install awsssomanager
         run: poetry install --no-interaction --no-ansi
 
-      # Commented out for template
-      #
-      # - name: Run Tests
-      #   run: poetry run pytest --cov aws-sso-manager
+      - name: Run Tests
+        run: poetry run pytest --cov awsssomanager
 
-      # - name: Upload coverage reports to Codecov
-      #   uses: codecov/codecov-action@v3
-      #   env: 
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      #   if: ${{ matrix.os == 'ubuntu-latest' && matrix.python == 3.9 }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env: 
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python == 3.12 }}
+
+  # Publish
+  publish:
+    needs: python-test
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          architecture: x64
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Build and publish
+        run: |
+          poetry publish --build --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
