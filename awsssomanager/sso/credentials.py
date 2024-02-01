@@ -2,11 +2,11 @@
 from concurrent.futures import ThreadPoolExecutor
 import configparser
 import logging
+import sys
 import time
 from typing import Dict
 
 import boto3
-import botocore
 
 from awsssomanager import CREDENTIALS_FILE
 from awsssomanager.config import AWSSSOManagerConfig
@@ -28,26 +28,17 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-def get_aws_sso_client() -> boto3.client:
-    """Get an AWS SSO client.
-
-    Returns:
-        boto3.client
-    """
-    return boto3.client("sso", region_name="us-east-1")
-
-
-def get_accounts_info(access_token: str) -> Dict:
+def get_accounts_info(config: AWSSSOManagerConfig) -> Dict:
     """Retrieve account information for all accounts that a user
     has access to.
 
     Args:
-        access_token (str): The access token for authentication.
+        config (AWSSSOManagerConfig): AWSSSOManagerConfig.
 
     Returns:
         Dict: A dictionary containing account information.
     """
-    sso_client = get_aws_sso_client()
+    sso_client = boto3.client("sso", region_name=config.region)
     accounts_info = {}
     list_accounts_paginator = sso_client.get_paginator("list_accounts")
 
@@ -60,7 +51,7 @@ def get_accounts_info(access_token: str) -> Dict:
                 "emailAddress": account["emailAddress"],
             }
 
-    for page in list_accounts_paginator.paginate(accessToken=access_token):
+    for page in list_accounts_paginator.paginate(accessToken=config.access_token):
         process_page(page)
 
     return accounts_info
@@ -76,14 +67,12 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
         None
     """
     credentials = load_credentials()
-    sso_client = boto3.client("sso-oidc", region_name="us-east-1")
-    token_expires_at = float(config.config["default"].get("accessTokenExpiresAt", "0"))
-    access_token = config.config["default"].get("accessToken", "")
+    sso_client = boto3.client("sso-oidc", region_name=config.region)
 
     logger.info('Retrieving credentials')
     while True:
         try:
-            if time.time() > token_expires_at:
+            if time.time() > config.access_token_expires_at:
                 # token expired, create a new one
                 try:
                     config = create_token(config)
@@ -91,23 +80,22 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
                     # invalid grant, reauthorize device
                     logger.warning("Unable to create token, reauthorizing...")
                     config = start_device_authorization(config)
-                access_token = config.config["default"]["accessToken"]
-                token_expires_at = float(config.config["default"]["accessTokenExpiresAt"])
+                except Exception as error:
+                    logger.error(f"Unable to create token, unknown exception: {error}")
+                    sys.exit(1)
 
             # Get list of accounts user has access to
-            accounts = get_accounts_info(access_token)
-            logger.debug(accounts)
+            accounts = get_accounts_info(config=config)
 
             # Get list of roles (for each account) the user has access to
-            roles = get_roles_for_accounts(accounts.values(), access_token)
-            logger.debug(roles)
+            roles = get_roles_for_accounts(accounts.values(), config)
 
             # Get credentials for all roles
             new_credentials = {}
             with ThreadPoolExecutor(max_workers=10) as pool:
                 results = list(pool.map(
                     lambda role: get_role_credentials(
-                        role, access_token, accounts
+                        accounts_info=accounts, config=config, role=role
                     ),
                     roles,
                 ))
@@ -116,7 +104,6 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
             for result in results:
                 new_credentials.update(result)
 
-            logger.debug(new_credentials)
             # Iterate over roles for account default permissions
             with ThreadPoolExecutor(max_workers=10) as pool:
                 pool.map(
@@ -137,7 +124,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
             logger.info("Credentials successfully retrieved")
             break  # exit out of cred loop
 
-        except sso_client.exceptions.UnauthorizedException:
+        except sso_client.exceptions.UnauthorizedClientException:
             logger.info("Access token unauthorized, sleeping and refetching credentials...")
             time.sleep(30)
 
@@ -163,7 +150,8 @@ def update_credentials_for_role(
     profile_name = f"{account_id}_{role_name}"
     account_name = accounts_info[account_id]["accountName"]
 
-    # If the account id alias is already in credentials, check to see if we should override for higher priority
+    # If the account id alias is already in credentials,
+    # check to see if we should override for higher priority
     if account_id in new_credentials:
         if compare_roles(config, role_name, new_credentials[account_id]["aws_sso_role_name"]) > 0:
             new_credentials[account_id] = new_credentials[profile_name].copy()
@@ -197,6 +185,6 @@ def save_credentials(credentials: configparser.ConfigParser) -> configparser.Con
     Returns:
         configparser.ConfigParser: ConfigParser object after saving.
     """
-    with open(CREDENTIALS_FILE, "w") as credentialsfile:
-        credentials.write(credentialsfile)
+    with open(CREDENTIALS_FILE, "w", encoding="utf-8") as file:
+        credentials.write(file)
     return load_credentials()

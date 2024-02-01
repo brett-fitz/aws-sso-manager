@@ -54,9 +54,9 @@ def register_new_device(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
     Returns:
         AWSSSOMangerConfig instance.
     """
-    sso_client = boto3.client("sso-oidc", region_name="us-east-1")
+    sso_client = boto3.client("sso-oidc", region_name=config.region)
     register_results = sso_client.register_client(
-        clientName="awsssomanager", clientType="public"
+        clientName="aws-sso-manager", clientType="public"
     )
     for key in ["clientId", "clientSecret", "clientSecretExpiresAt"]:
         config.config["default"][key] = str(register_results[key])
@@ -89,6 +89,7 @@ def start_device_authorization(
         clientSecret=config.config["default"]["clientSecret"],
         startUrl=f"https://{config.sso_domain}.awsapps.com/start",
     )
+
     device_auth_starttime = time.time()
     config.config["default"]["deviceCode"] = device_auth_results["deviceCode"]
     verification_uri = device_auth_results["verificationUriComplete"]
@@ -105,5 +106,6 @@ def start_device_authorization(
         time.sleep(1)
         if (time.time() - device_auth_starttime) >= device_auth_results["expiresIn"]:
             raise RuntimeError("Failed to authenticate in time")
+
     logger.info('Successfully registered user.')
     return config

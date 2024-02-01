@@ -24,7 +24,7 @@ def create_token(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
     Returns:
         AWSSSOManagerConfig: Updated configuration after creating the token.
     """
-    sso_client = boto3.client("sso-oidc", region_name="us-east-1")
+    sso_client = boto3.client("sso-oidc", region_name=config.region)
     token_result = sso_client.create_token(
         clientId=config.config["default"]["clientId"],
         clientSecret=config.config["default"]["clientSecret"],
@@ -51,7 +51,7 @@ def test_create_token(config: AWSSSOManagerConfig) -> bool:
     Returns:
         bool: True if successful else False.
     """
-    sso_client = boto3.client("sso-oidc", region_name="us-east-1")
+    sso_client = boto3.client("sso-oidc", region_name=config.region)
     try:
         create_token(config)
     except (
