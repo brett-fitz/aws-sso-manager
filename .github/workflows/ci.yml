@@ -42,11 +42,11 @@ jobs:
           architecture: x64
           cache: poetry
 
-      - name: Install aws-sso-manager
+      - name: Install awsssomanager
         run: poetry install --no-interaction --no-ansi
 
       - name: Run Tests
-        run: poetry run pytest --cov aws-sso-manager
+        run: poetry run pytest --cov awsssomanager
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
