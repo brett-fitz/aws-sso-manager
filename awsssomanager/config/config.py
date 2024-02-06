@@ -5,8 +5,9 @@ from typing import Dict, List
 
 import yaml
 
-from awsssomanager import AWS_DIR, SSO_MANAGER_CONFIG_FILE
+from awsssomanager import AWS_DIR, SCHEMA_PATH, SSO_MANAGER_CONFIG_FILE
 from awsssomanager.utils import is_valid_dir, is_valid_file
+from awsssomanager.utils.validators import validate_yaml
 
 
 __all__ = [
@@ -22,28 +23,66 @@ class AWSSSOManagerConfig:
 
     def __init__(self, config: Dict):
         self.config: Dict = config
+        if not self.config.get('device'):
+            self.config['device'] = {}
 
     @property
     def access_token(self) -> str:
-        """Get the accessToken
+        """Get the device accessToken
 
         Returns:
             accessToken.
         """
-        return self.config['default']['accessToken']
+        return self.config['device']['accessToken']
 
     @property
     def access_token_expires_at(self) -> float:
-        """Get the accessTokenExpiresAt
+        """Get the device accessTokenExpiresAt
 
         Returns:
             accessTokenExpiresAt.
         """
-        return float(self.config['default'].get('accessTokenExpiresAt', '0'))
+        return float(self.config['device'].get('accessTokenExpiresAt', '0'))
+
+    @property
+    def client_id(self) -> str:
+        """Get the device clientId
+
+        Returns:
+            clientId.
+        """
+        return self.config['device']['clientId']
+
+    @property
+    def client_secret(self) -> str:
+        """Get the device clientSecret
+
+        Returns:
+            clientSecret.
+        """
+        return self.config['device']['clientSecret']
+
+    @property
+    def client_secret_expires_at(self) -> float:
+        """Get the device clientSecretExpiresAt
+
+        Returns:
+            clientSecretExpiresAt.
+        """
+        return float(self.config['device']['clientSecretExpiresAt'])
+
+    @property
+    def device_code(self) -> str:
+        """Get the device deviceCode
+
+        Returns:
+            deviceCode.
+        """
+        return self.config['device']['deviceCode']
 
     @property
     def login_account(self) -> str:
-        """Get the loginAccount
+        """Get the default loginAccount
 
         Returns:
             loginAccount.
@@ -52,12 +91,12 @@ class AWSSSOManagerConfig:
 
     @property
     def region(self) -> str:
-        """Get the default aws region
+        """Get the aws sso region
 
         Returns:
             AWS region.
         """
-        return self.config['default']['region']
+        return self.config['region']
 
     @property
     def role_priority(self) -> List[str]:
@@ -75,7 +114,7 @@ class AWSSSOManagerConfig:
         Returns:
             ssoDomain.
         """
-        return self.config['default']['ssoDomain']
+        return self.config['ssoDomain']
 
     @classmethod
     def from_config(cls, config_file: str):
@@ -87,6 +126,10 @@ class AWSSSOManagerConfig:
         Returns:
             class instance.
         """
+        # validate config file
+        validate_yaml(config_file, SCHEMA_PATH)
+
+        # load config file
         with open(config_file, 'r', encoding='utf-8') as file:
             config = yaml.safe_load(file)
         return cls(config=config)

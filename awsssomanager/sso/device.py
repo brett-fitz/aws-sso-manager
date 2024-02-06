@@ -35,10 +35,10 @@ def authorize_device(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
             "clientSecretExpiresAt",
             "deviceCode"
         ]
-    ).issubset(set([*config.config["default"]])):
+    ).issubset(set([*config.config["device"]])):
         config = register_new_device(config)
     elif time.localtime() >= time.localtime(
-        float(config.config["default"]["clientSecretExpiresAt"])
+        config.client_secret_expires_at
     ):
         # Device registration has expired (3 months)
         config = register_new_device(config)
@@ -59,7 +59,7 @@ def register_new_device(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
         clientName="aws-sso-manager", clientType="public"
     )
     for key in ["clientId", "clientSecret", "clientSecretExpiresAt"]:
-        config.config["default"][key] = str(register_results[key])
+        config.config["device"][key] = str(register_results[key])
     config = start_device_authorization(config)
 
     # Save the config when we return it
@@ -85,13 +85,13 @@ def start_device_authorization(
 
     # start device authorization
     device_auth_results = sso_client.start_device_authorization(
-        clientId=config.config["default"]["clientId"],
-        clientSecret=config.config["default"]["clientSecret"],
+        clientId=config.client_id,
+        clientSecret=config.client_secret,
         startUrl=f"https://{config.sso_domain}.awsapps.com/start",
     )
 
     device_auth_starttime = time.time()
-    config.config["default"]["deviceCode"] = device_auth_results["deviceCode"]
+    config.config["device"]["deviceCode"] = device_auth_results["deviceCode"]
     verification_uri = device_auth_results["verificationUriComplete"]
 
     # prompt user for verification

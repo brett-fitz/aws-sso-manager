@@ -1,6 +1,7 @@
 """awsssomanager.utils module: general"""
 import logging
 import subprocess
+from typing import Tuple
 
 
 __all__ = [
@@ -10,7 +11,7 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-def run_cmd(command):
+def run_cmd(command) -> Tuple:
     """
     Run a shell command safely.
 

@@ -41,4 +41,8 @@ Usage: aws-sso-manager [OPTIONS] COMMAND [ARGS]...
 Options:
   -v, --verbose  Verbose logging
   -h, --help     Show this message and exit.
+
+Commands:
+  configure  Configure AWS SSO Manager
+  login      aws sso login
 ```
