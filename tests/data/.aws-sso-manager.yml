@@ -1,7 +1,8 @@
+ssoDomain: 'test'
+region: 'us-east-1'
+
 default:
-    loginAccount: ''
-    ssoDomain: ''
-    region: 'us-east-2'
+    loginAccount: '1234567890'
 
 role_priority:
   - "ViewOnlyAccess"

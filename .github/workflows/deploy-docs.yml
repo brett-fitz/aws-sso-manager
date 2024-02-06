@@ -1,0 +1,87 @@
+name: 'Deploy Docs'
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Deployment stage'
+        required: true
+        default: 'dev'
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'docs/**'
+  #     - 'mkdocs.yml'
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'docs/**'
+  #     - 'mkdocs.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    env:
+      STAGE: ${{ github.event_name == 'push' && 'prod' || github.event_name == 'pull_request' && 'dev' || github.event_name == 'workflow_dispatch' && github.event.inputs.stage }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use Deploy Serverless Action
+        uses: brett-fitz/devops/actions/deploy-serverless@main
+        with:
+          stage: ${{ env.STAGE }}
+          working-directory: ./docs
+
+  update-docs:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    env:
+      STAGE: ${{ github.event_name == 'push' && 'prod' || github.event_name == 'pull_request' && 'dev' || github.event_name == 'workflow_dispatch' && github.event.inputs.stage }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup AWS
+        uses: brett-fitz/devops/actions/setup-aws@main
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+          architecture: x64
+          cache: poetry
+
+      - name: Install Package
+        working-directory: ./aws-sso-manager/
+        run: |
+          poetry install --no-interaction --no-ansi --with docs
+          echo "PATH=$(poetry env info --path)/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Build Docs
+        run: >
+          mkdocs build --no-directory-urls
+
+      - name: Sync files with S3
+        run: >
+          aws s3 sync ./site s3://aws-sso-manager-${{ env.STAGE }}-docs

@@ -1,15 +1,16 @@
 ---
-title: "Python CLI Template Documentation"
-description: A simple template for creating a Python CLI.
+title: "aws-sso-manager Documentation"
+description: Documentation for the CLI & python package aws-sso-manager.
 ---
 
 # Welcome
 
 ![aws-sso-manager-logo](img/logo.png)
 
-Welcome to **Python CLI Template**'s documentation hub!
+Welcome to **aws-sso-manager**'s documentation hub!
 
-[Drop a short description here describing your CLI's purpose.]
+A simple AWS SSO Manager that makes authenticating between multiple profiles, roles, and
+SSO domains a breeze. 
 
 !!! tip ":material-slack: Slack Channel"
-    Come hangout in [**#slack-channel**](https://github.com/brett-fitz/aws-sso-manager/) for all things **aws-sso-manager**!
+    Come hangout in [**GitHub Discussions**](https://github.com/brett-fitz/aws-sso-manager/discussions) for all things **aws-sso-manager**!

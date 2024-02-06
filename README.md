@@ -3,7 +3,8 @@
 [![License](https://img.shields.io/github/license/brett-fitz/aws-sso-manager?style=flat-square)](https://github.com/brett-fitz/aws-sso-manager/blob/main/LICENSE)
 [![Issues](https://img.shields.io/github/issues/brett-fitz/aws-sso-manager?style=flat-square)](https://github.com/brett-fitz/aws-sso-manager/issues)
 
-Simple AWS SSO Manager that makes authenticating between multiple profiles and roles a breeze. 
+A simple AWS SSO Manager that makes authenticating between multiple profiles, roles, and
+SSO domains a breeze. 
 
 ## Overview
 
@@ -22,10 +23,11 @@ poetry add awsssomanager
 Create a config file. You can create a config file for each `ssoDomain`.
 
 ```yaml
+ssoDomain: 'myssodomain'       # Your aws sso domain (<sso domain>.awsapps.com)
+region: 'us-east-1'            # The aws region where your aws sso is configured.
+
 default:
-    loginAccount: '1234567890'
-    ssoDomain: 'myssodomain'
-    region: 'us-east-1'
+  loginAccount: '1234567890'   # The default account you want mapped to the profile: default
 
 role_priority:
   - "ViewOnlyAccess"

@@ -16,19 +16,8 @@ provider:
     disableDefaultEndpoint: true
     binaryMediaTypes:
       - '*/*'
-    # For internal documentation example: add a resource policy to only allow specific IPs
-    resourcePolicy:
-      - Effect: Allow
-        Principal: '*'
-        Action: execute-api:Invoke
-        Resource: 
-          - execute-api:/*
-        Condition:
-          IpAddress:
-            aws:SourceIp:
-              - '1.1.1.1/32'
+
   tags:                                             # optional CloudFormation tags to apply to APIs and functions
-    Team: My Awesome Team
     Project: aws-sso-manager
   
   stackTags:                                        # optional CloudFormation tags to apply to the stackParameters:

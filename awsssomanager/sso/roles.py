@@ -82,9 +82,9 @@ def get_role_credentials(
     """Retrieve credentials for a role.
 
     Args:
-        role (Dict): The role for which credentials are to be retrieved.
-        access_token (str): The access token for authentication.
         accounts_info (Dict): Information about accounts.
+        config (AWSSSOManagerConfig): AWSSSOManagerConfig.
+        role (Dict): The role for which credentials are to be retrieved.
 
     Returns:
         Dict: A dictionary containing role credentials.

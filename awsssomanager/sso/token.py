@@ -26,17 +26,17 @@ def create_token(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
     """
     sso_client = boto3.client("sso-oidc", region_name=config.region)
     token_result = sso_client.create_token(
-        clientId=config.config["default"]["clientId"],
-        clientSecret=config.config["default"]["clientSecret"],
+        clientId=config.client_id,
+        clientSecret=config.client_secret,
         grantType="urn:ietf:params:oauth:grant-type:device_code",
         refreshToken="abcdefg",  # Note: test refreshToken
-        deviceCode=config.config["default"]["deviceCode"],
-        code=config.config["default"]["deviceCode"],
+        deviceCode=config.device_code,
+        code=config.device_code,
     )
 
     # Update configuration with token information
-    config.config["default"]["accessToken"] = token_result["accessToken"]
-    config.config["default"]["accessTokenExpiresAt"] = str(
+    config.config["device"]["accessToken"] = token_result["accessToken"]
+    config.config["device"]["accessTokenExpiresAt"] = str(
         time.time() + float(token_result["expiresIn"]) - 1
     )
     return config

@@ -4,11 +4,10 @@ import logging
 import click
 import coloredlogs
 
-from awsssomanager import SCHEMA_PATH, SSO_MANAGER_CONFIG_FILE
+from awsssomanager import SSO_MANAGER_CONFIG_FILE
 from awsssomanager.config import AWSSSOManagerConfig
 from awsssomanager.sso.credentials import get_credentials
 from awsssomanager.sso.device import authorize_device
-from awsssomanager.utils.validators import validate_yaml
 
 
 __all__ = [
@@ -39,9 +38,6 @@ def configure(config_file: str, reset: bool) -> None:
             '(hint: -R, --reset to reconfigure)'
         )
         click.get_current_context().exit()
-
-    # validate config file
-    validate_yaml(config_file, SCHEMA_PATH)
 
     # create directory if needed
     AWSSSOManagerConfig.create_aws_dir()
