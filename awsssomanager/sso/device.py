@@ -19,13 +19,22 @@ logger = logging.getLogger(__name__)
 
 
 def authorize_device(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
-    """Authorize the device for sso
+    """Authorizes the device for AWS SSO access.
 
     Args:
-        config: AWSSSOMangerConfig instance.
+        config (AWSSSOManagerConfig): The configuration object containing device and AWS SSO
+                                      client information.
 
     Returns:
-        AWSSSOMangerConfig instance.
+        AWSSSOManagerConfig: The updated configuration object with device authorization.
+
+    Notes:
+        This function checks if the device is already registered for AWS SSO access. If the
+        necessary device information (client ID, client secret, client secret expiration, and
+        device code) is not present in the configuration object, it registers the device by
+        calling the register_new_device function. If the client secret has expired, it also
+        triggers device registration to obtain new credentials. Once the device is registered or
+        updated, the function returns the updated configuration object.
     """
     # check if device is registered
     if not set(
@@ -69,16 +78,28 @@ def register_new_device(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
 def start_device_authorization(
     config: AWSSSOManagerConfig,
 ) -> AWSSSOManagerConfig:
-    """Start device authorization for client.
+    """Starts the device authorization flow for the AWS SSO client.
 
     Args:
-        config (AWSSSOManagerConfig): _description_
+        config (AWSSSOManagerConfig): The configuration object containing necessary parameters
+                                      for the AWS SSO client.
 
     Raises:
-        RuntimeError: _description_
+        RuntimeError: Raised if the device authorization process fails to authenticate within the
+                      specified time limit.
 
     Returns:
-        AWSSSOManagerConfig: _description_
+        AWSSSOManagerConfig: The updated configuration object with the device code and verification
+                             URI information.
+
+    Notes:
+        This function initiates the device authorization flow for the AWS SSO client. It obtains the
+        necessary information from the provided configuration object, including the client ID, client
+        secret, and SSO domain. The device authorization process is started using the provided AWS SSO
+        client and parameters. Once started, the function prompts the user to verify the device by
+        opening a browser window or tab with the verification URI. It then waits for the user to
+        complete the verification process. If the process fails to authenticate within the specified
+        time limit, a RuntimeError is raised.
     """
     # create sso client
     sso_client = boto3.client("sso-oidc", region_name=config.region)
