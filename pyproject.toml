@@ -12,7 +12,7 @@ click = "^8.1.7"
 coloredlogs = "^15.0.1"
 boto3 = "^1.34.79"
 pyyaml = "^6.0.1"
-yamale = "^4.0.4"
+yamale = "^5.1.0"
 
 
 [tool.poetry.group.dev.dependencies]

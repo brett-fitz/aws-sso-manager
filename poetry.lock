@@ -1512,13 +1512,13 @@ bracex = ">=2.1.1"
 
 [[package]]
 name = "yamale"
-version = "4.0.4"
+version = "5.1.0"
 description = "A schema and validator for YAML."
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "yamale-4.0.4-py3-none-any.whl", hash = "sha256:04f914c0886bda03ac20f8468272cfd9374a634a062549490eff2beedeb30497"},
-    {file = "yamale-4.0.4.tar.gz", hash = "sha256:e524caf71cbbbd15aa295e8bdda01688ac4b5edaf38dd60851ddff6baef383ba"},
+    {file = "yamale-5.1.0-py3-none-any.whl", hash = "sha256:f5fcc7018824330cab2e2e5d5fefa767c298b5d4bb844e87013dcc4e29a2df84"},
+    {file = "yamale-5.1.0.tar.gz", hash = "sha256:b26052bb1d5d2260b4bc2996449e11ede1e4963a8b2a37305eff2da0c6455342"},
 ]
 
 [package.dependencies]
@@ -1542,4 +1542,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e69a9fd478e1b7a433dd7861d6297f11122ce1f1b668deb4570945c178720068"
+content-hash = "3c5d91723b3854b139ba8bcc516c8b2ede001f2e84713b68f6c88b415dd13943"
