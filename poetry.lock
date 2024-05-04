@@ -30,17 +30,17 @@ dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 
 [[package]]
 name = "boto3"
-version = "1.34.93"
+version = "1.34.98"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.34.93-py3-none-any.whl", hash = "sha256:b59355bf4a1408563969526f314611dbeacc151cf90ecb22af295dcc4fe18def"},
-    {file = "boto3-1.34.93.tar.gz", hash = "sha256:e39516e4ca21612932599819662759c04485d53ca457996a913163da11f052a4"},
+    {file = "boto3-1.34.98-py3-none-any.whl", hash = "sha256:030e43b8efe22b4cf10b9f3ef9e30cd4cf9ef9784b26efe9a4583339f2b2bcec"},
+    {file = "boto3-1.34.98.tar.gz", hash = "sha256:28c10956033fa79e64529f48c3b62db86d5e4b77024a7343764b6bde6b553543"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.93,<1.35.0"
+botocore = ">=1.34.98,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -49,13 +49,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.93"
+version = "1.34.98"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.93-py3-none-any.whl", hash = "sha256:6fbd5a53a2adc9b3d4ebd90ae0ede83a91a41d96231f8a5984051f75495f246d"},
-    {file = "botocore-1.34.93.tar.gz", hash = "sha256:79d39b0b87e962991c6dd55e78ce15155099f6fb741be88b1b8a456a702cc150"},
+    {file = "botocore-1.34.98-py3-none-any.whl", hash = "sha256:631c0031d8ce922b5752ab395ead896a0281b0dc74745a754d0351a27c5d83de"},
+    {file = "botocore-1.34.98.tar.gz", hash = "sha256:4cee65df02f4b0be08ad1401965cc89efafebc50ef0727d2d17083c7f1ed2831"},
 ]
 
 [package.dependencies]
@@ -675,13 +675,13 @@ pyyaml = ">=5.1"
 
 [[package]]
 name = "mkdocs-include-markdown-plugin"
-version = "6.0.5"
+version = "6.0.6"
 description = "Mkdocs Markdown includer plugin."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_include_markdown_plugin-6.0.5-py3-none-any.whl", hash = "sha256:db41aa1937a618afa3497616f457d4e51d9123b13b2034bb15505ff9ce061f86"},
-    {file = "mkdocs_include_markdown_plugin-6.0.5.tar.gz", hash = "sha256:ad10779cf0dc4ff180aaa0079163271877b3c2fd31e36d5579854fe1d4b0d1ae"},
+    {file = "mkdocs_include_markdown_plugin-6.0.6-py3-none-any.whl", hash = "sha256:7ccafbaa412c1e5d3510c4aff46d1fe64c7a810c01dace4c636253d1aa5bc193"},
+    {file = "mkdocs_include_markdown_plugin-6.0.6.tar.gz", hash = "sha256:7c80258b2928563c75cc057a7b9a0014701c40804b1b6aa290f3b4032518b43c"},
 ]
 
 [package.dependencies]
@@ -707,13 +707,13 @@ mkdocs = ">=1.0.3"
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.19"
+version = "9.5.21"
 description = "Documentation that simply works"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_material-9.5.19-py3-none-any.whl", hash = "sha256:ea96e150b6c95f5e4ffe47d78bb712c7bacdd91d2a0bec47f46b6fa0705a86ec"},
-    {file = "mkdocs_material-9.5.19.tar.gz", hash = "sha256:7473e06e17e23af608a30ef583fdde8f36389dd3ef56b1d503eed54c89c9618c"},
+    {file = "mkdocs_material-9.5.21-py3-none-any.whl", hash = "sha256:210e1f179682cd4be17d5c641b2f4559574b9dea2f589c3f0e7c17c5bd1959bc"},
+    {file = "mkdocs_material-9.5.21.tar.gz", hash = "sha256:049f82770f40559d3c2aa2259c562ea7257dbb4aaa9624323b5ef27b2d95a450"},
 ]
 
 [package.dependencies]
@@ -1516,13 +1516,13 @@ bracex = ">=2.1.1"
 
 [[package]]
 name = "yamale"
-version = "5.2.0"
+version = "5.2.1"
 description = "A schema and validator for YAML."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "yamale-5.2.0-py3-none-any.whl", hash = "sha256:4e973d47584d6b5279833dfe5d18452ec81c51588578a9c94871b6763aace3c8"},
-    {file = "yamale-5.2.0.tar.gz", hash = "sha256:a411f24cc04e509e665773d23981d9573b93b31c296fbc1a09ec74a50f5d26ce"},
+    {file = "yamale-5.2.1-py3-none-any.whl", hash = "sha256:e44cd30cf3055ee4b34c1c71d6fe35490a127dcbd36f82f27859d105a9989922"},
+    {file = "yamale-5.2.1.tar.gz", hash = "sha256:19bbe713d588f07177bc519a46070c0793ed126ea37f425a76055b99703f835a"},
 ]
 
 [package.dependencies]
@@ -1546,4 +1546,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "157630af0c54ca08c5c0c95a563e2c1afc011b146abf78ee5f5e768d74fbb2a5"
+content-hash = "7b0c70d48e1a4502c6222c1b74032169c8c52d32d9a23f6ae3ab5cbf3a06c198"
