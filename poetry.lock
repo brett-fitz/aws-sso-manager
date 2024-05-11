@@ -30,17 +30,17 @@ dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 
 [[package]]
 name = "boto3"
-version = "1.34.98"
+version = "1.34.103"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.34.98-py3-none-any.whl", hash = "sha256:030e43b8efe22b4cf10b9f3ef9e30cd4cf9ef9784b26efe9a4583339f2b2bcec"},
-    {file = "boto3-1.34.98.tar.gz", hash = "sha256:28c10956033fa79e64529f48c3b62db86d5e4b77024a7343764b6bde6b553543"},
+    {file = "boto3-1.34.103-py3-none-any.whl", hash = "sha256:59b6499f1bb423dd99de6566a20d0a7cf1a5476824be3a792290fd86600e8365"},
+    {file = "boto3-1.34.103.tar.gz", hash = "sha256:58d097241f3895c4a4c80c9e606689c6e06d77f55f9f53a4cc02dee7e03938b9"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.98,<1.35.0"
+botocore = ">=1.34.103,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -49,13 +49,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.98"
+version = "1.34.103"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.98-py3-none-any.whl", hash = "sha256:631c0031d8ce922b5752ab395ead896a0281b0dc74745a754d0351a27c5d83de"},
-    {file = "botocore-1.34.98.tar.gz", hash = "sha256:4cee65df02f4b0be08ad1401965cc89efafebc50ef0727d2d17083c7f1ed2831"},
+    {file = "botocore-1.34.103-py3-none-any.whl", hash = "sha256:0330d139f18f78d38127e65361859e24ebd6a8bcba184f903c01bb999a3fa431"},
+    {file = "botocore-1.34.103.tar.gz", hash = "sha256:5f07e2c7302c0a9f469dcd08b4ddac152e9f5888b12220242c20056255010939"},
 ]
 
 [package.dependencies]
@@ -778,13 +778,13 @@ mkdocs = ">=1.2"
 
 [[package]]
 name = "mkdocs-table-reader-plugin"
-version = "2.2.0"
+version = "2.2.1"
 description = "MkDocs plugin to directly insert tables from files into markdown."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_table_reader_plugin-2.2.0-py3-none-any.whl", hash = "sha256:b586c248ebdf1bfbd9b85e26db92ab04c5f4cddf3c95f8886a5805708d947172"},
-    {file = "mkdocs_table_reader_plugin-2.2.0.tar.gz", hash = "sha256:7816348052345bd07b931b6e20ad704e8ec422700b4c16ea7dc6d062367cf31a"},
+    {file = "mkdocs_table_reader_plugin-2.2.1-py3-none-any.whl", hash = "sha256:35d7ccadcee70f8415f2a9c73f260074512585ce8f6b81267cd537effac260d6"},
+    {file = "mkdocs_table_reader_plugin-2.2.1.tar.gz", hash = "sha256:8205b422bb37368e3e8c0bf5932e08400442946a1b07fdc0bb11df09c409291b"},
 ]
 
 [package.dependencies]
@@ -1545,4 +1545,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "9375fa50f05568731a30f787577073d733396057c46bc8cd83d4c90f87119381"
+content-hash = "ad718af899180152611feae4a321e0d4c9ecb25a045aaa652420fad9e00b3d48"
