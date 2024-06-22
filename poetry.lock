@@ -30,17 +30,17 @@ dev = ["freezegun (>=1.0,<2.0)", "pytest (>=6.0)", "pytest-cov"]
 
 [[package]]
 name = "boto3"
-version = "1.34.127"
+version = "1.34.131"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.34.127-py3-none-any.whl", hash = "sha256:d370befe4fb7aea5bc383057d7dad18dda5d0cf3cd3295915bcc8c8c4191905c"},
-    {file = "boto3-1.34.127.tar.gz", hash = "sha256:58ccdeae3a96811ecc9d5d866d8226faadbd0ee1891756e4a04d5186e9a57a64"},
+    {file = "boto3-1.34.131-py3-none-any.whl", hash = "sha256:05e388cb937e82be70bfd7eb0c84cf8011ff35cf582a593873ac21675268683b"},
+    {file = "boto3-1.34.131.tar.gz", hash = "sha256:dab8f72a6c4e62b4fd70da09e08a6b2a65ea2115b27dd63737142005776ef216"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.127,<1.35.0"
+botocore = ">=1.34.131,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -49,13 +49,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.127"
+version = "1.34.131"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.127-py3-none-any.whl", hash = "sha256:e14fa28c8bb141de965e700f88b196d17c67a703c7f0f5c7e14f7dd1cf636011"},
-    {file = "botocore-1.34.127.tar.gz", hash = "sha256:a377871742c40603d559103f19acb7bc93cfaf285e68f21b81637ec396099877"},
+    {file = "botocore-1.34.131-py3-none-any.whl", hash = "sha256:13b011d7b206ce00727dcee26548fa3b550db9046d5a0e90ac25a6e6c8fde6ef"},
+    {file = "botocore-1.34.131.tar.gz", hash = "sha256:502ddafe1d627fcf1e4c007c86454e5dd011dba7c58bd8e8a5368a79f3e387dc"},
 ]
 
 [package.dependencies]
@@ -675,13 +675,13 @@ pyyaml = ">=5.1"
 
 [[package]]
 name = "mkdocs-include-markdown-plugin"
-version = "6.2.0"
+version = "6.2.1"
 description = "Mkdocs Markdown includer plugin."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_include_markdown_plugin-6.2.0-py3-none-any.whl", hash = "sha256:32f03b127369b79df803eca2490e5564e38ae72108d6a4292f3717ca684ed1fc"},
-    {file = "mkdocs_include_markdown_plugin-6.2.0.tar.gz", hash = "sha256:c9f63eeebc0e34d64236c88f3cf6696c03ca99d74e4b57fe86701e8942d53ba5"},
+    {file = "mkdocs_include_markdown_plugin-6.2.1-py3-none-any.whl", hash = "sha256:8dfc3aee9435679b094cbdff023239e91d86cf357c40b0e99c28036449661830"},
+    {file = "mkdocs_include_markdown_plugin-6.2.1.tar.gz", hash = "sha256:46fc372886d48eec541d36138d1fe1db42afd08b976ef7c8d8d4ea6ee4d5d1e8"},
 ]
 
 [package.dependencies]
@@ -1557,4 +1557,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "6bb4a280eb7751874a0e1a6de75d8a254a02c5e987686d21385362a748452018"
+content-hash = "f2ad8fe306f3fa7a32592073b2362402fc85802b95e089159e70c995dc06fc54"
