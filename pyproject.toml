@@ -26,7 +26,7 @@ pytest-cov = "^4.1.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
-mkdocs-material = "^9.5.35"
+mkdocs-material = "^9.5.36"
 mkdocs-minify-plugin = "^0.8.0"
 mkdocs-table-reader-plugin = "^2.2.2"
 mkdocs-include-markdown-plugin = "^6.2.2"
