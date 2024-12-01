@@ -20,7 +20,7 @@ pylint = "^3.3.1"
 
 
 [tool.poetry.group.test.dependencies]
-pytest = "^8.3.3"
+pytest = "^8.3.4"
 pytest-cov = "^5.0.0"
 
 
