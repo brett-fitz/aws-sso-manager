@@ -1056,8 +1056,8 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.22.4", markers = "python_version < \"3.11\""},
-    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -1160,8 +1160,8 @@ astroid = ">=3.3.8,<=3.4.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
     {version = ">=0.2", markers = "python_version < \"3.11\""},
-    {version = ">=0.3.6", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
     {version = ">=0.3.7", markers = "python_version >= \"3.12\""},
+    {version = ">=0.3.6", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
 ]
 isort = ">=4.2.5,<5.13.0 || >5.13.0,<6"
 mccabe = ">=0.6,<0.8"
@@ -1678,17 +1678,20 @@ bracex = ">=2.1.1"
 
 [[package]]
 name = "yamale"
-version = "5.2.1"
+version = "6.0.0"
 description = "A schema and validator for YAML."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "yamale-5.2.1-py3-none-any.whl", hash = "sha256:e44cd30cf3055ee4b34c1c71d6fe35490a127dcbd36f82f27859d105a9989922"},
-    {file = "yamale-5.2.1.tar.gz", hash = "sha256:19bbe713d588f07177bc519a46070c0793ed126ea37f425a76055b99703f835a"},
+    {file = "yamale-6.0.0-py3-none-any.whl", hash = "sha256:828c6cf2023101ec97d2759dfdc507e04ecfc0c6d39d500c00c37ec895ada53b"},
+    {file = "yamale-6.0.0.tar.gz", hash = "sha256:60be681f35e4939320b89de0d6f187ee0e5479ae7f7286b7f17f0859ddee4a66"},
 ]
 
 [package.dependencies]
 pyyaml = "*"
+
+[package.extras]
+ruamel = ["ruamel.yaml"]
 
 [[package]]
 name = "zipp"
@@ -1712,4 +1715,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "17aa805bb93ed42867ccd4b806a21087522a2cae154bfde0f2fc57fd04b015d8"
+content-hash = "e868da46fe471f3ff9b1b4f4a98a0a74e644828b053c08c82a887eb31d434898"
