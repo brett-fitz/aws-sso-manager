@@ -48,17 +48,17 @@ extras = ["regex"]
 
 [[package]]
 name = "boto3"
-version = "1.37.4"
+version = "1.37.9"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.37.4-py3-none-any.whl", hash = "sha256:1bbf8bbacb3932956b7020d9a2c49d72c64e21bae9397ba6d3aadffab5e192eb"},
-    {file = "boto3-1.37.4.tar.gz", hash = "sha256:024c37c2f85f4b907f5fc817d0db6fda7fd6ab3c6148ee4ed35fe7cecdf7db0c"},
+    {file = "boto3-1.37.9-py3-none-any.whl", hash = "sha256:cfff6e9cf4b987480fbbe85873f3e609aeea1906631c7148e5b7e3c778aebd40"},
+    {file = "boto3-1.37.9.tar.gz", hash = "sha256:51b76da93d7c2a3dff6155ee4aa25455940e7ade08292d22aeeed08b9e0dbf0b"},
 ]
 
 [package.dependencies]
-botocore = ">=1.37.4,<1.38.0"
+botocore = ">=1.37.9,<1.38.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.11.0,<0.12.0"
 
@@ -67,13 +67,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.37.4"
+version = "1.37.9"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.37.4-py3-none-any.whl", hash = "sha256:89130998c82d53f875a42646b692da507c9871b580fd1aea0f861bf9da36e41a"},
-    {file = "botocore-1.37.4.tar.gz", hash = "sha256:7e15cd487617440e9eac3144044b6a2bd833d7f3e2bed6a2865693cc11489cc3"},
+    {file = "botocore-1.37.9-py3-none-any.whl", hash = "sha256:bf0ab085ae85a4a2fa1733321069c1039745fa65ca9f335a91b8712fd6745d5f"},
+    {file = "botocore-1.37.9.tar.gz", hash = "sha256:2fdafbb9c44196cd371f4890aedf9f54352348fbae624a3880862d35724f0956"},
 ]
 
 [package.dependencies]
@@ -715,13 +715,13 @@ pyyaml = ">=5.1"
 
 [[package]]
 name = "mkdocs-include-markdown-plugin"
-version = "7.1.4"
+version = "7.1.5"
 description = "Mkdocs Markdown includer plugin."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "mkdocs_include_markdown_plugin-7.1.4-py3-none-any.whl", hash = "sha256:9c7046490ef89f7645d10a8b5db9f36ed0d5b8730c8dc55d4ded8e285f6c0baa"},
-    {file = "mkdocs_include_markdown_plugin-7.1.4.tar.gz", hash = "sha256:0aacae5b328b015569f13e55f8aaa35998ece3f9a41dcd5dc105825fc1aa89b0"},
+    {file = "mkdocs_include_markdown_plugin-7.1.5-py3-none-any.whl", hash = "sha256:d0b96edee45e7fda5eb189e63331cfaf1bf1fbdbebbd08371f1daa77045d3ae9"},
+    {file = "mkdocs_include_markdown_plugin-7.1.5.tar.gz", hash = "sha256:a986967594da6789226798e3c41c70bc17130fadb92b4313f42bd3defdac0adc"},
 ]
 
 [package.dependencies]
@@ -1632,4 +1632,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f2e25f50e9e410c67a6c6f5bfed452682af244c68e4d1e7ff9df9f78574906f2"
+content-hash = "7467343837b94170c5b350c1f3e101d18c0dd2ceb5b9567f522d40e9dcf39d7a"
