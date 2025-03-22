@@ -10,13 +10,13 @@ readme = "README.md"
 python = "^3.9"
 click = "^8.1.8"
 coloredlogs = "^15.0.1"
-boto3 = "^1.37.13"
+boto3 = "^1.37.18"
 pyyaml = "^6.0.2"
 yamale = "^6.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
-pylint = "^3.3.5"
+pylint = "^3.3.6"
 
 
 [tool.poetry.group.test.dependencies]
@@ -26,12 +26,12 @@ pytest-cov = "^6.0.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.8"
+mkdocs-material = "^9.6.9"
 mkdocs-minify-plugin = "^0.8.0"
 mkdocs-table-reader-plugin = "^3.1.0"
 mkdocs-include-markdown-plugin = "^7.1.5"
 mkdocs-gen-files = "^0.5.0"
-mkdocs-literate-nav = "^0.6.1"
+mkdocs-literate-nav = "^0.6.2"
 mkdocs-section-index = "^0.3.9"
 mkdocstrings = {extras = ["python"], version = "^0.29.0"}
 
