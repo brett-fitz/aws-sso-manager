@@ -1,47 +1,21 @@
-"""aws-sso-manager sso module: roles."""
+"""IAM Identity Center role discovery and per-role credentials."""
 
 from collections.abc import Iterable
+from datetime import UTC, datetime
 import logging
-import time
+from typing import Any
 
 import boto3
 
 from awsssomanager.config.config import AWSSSOManagerConfig
+from awsssomanager.models import Role, RoleCredentials
 
 
-__all__ = ["compare_roles", "get_roles_for_accounts", "get_role_credentials"]
+__all__ = ["get_role_credentials", "get_roles_for_accounts"]
 
 logger = logging.getLogger(__name__)
 
-
-def compare_roles(config: AWSSSOManagerConfig, left_role_name: str, right_role_name: str) -> int:
-    """Compare two roles by name and return
-        1 if the first is higher priority,
-        -1 if the second is higher,
-        or 0 if same.
-
-    Args:
-        config: _description_
-        left_role_name: _description_
-        right_role_name: _description_
-
-    Returns:
-        _description_
-    """
-    left_index = (
-        config.role_priority.index(left_role_name) if left_role_name in config.role_priority else -1
-    )
-    right_index = (
-        config.role_priority.index(right_role_name)
-        if right_role_name in config.role_priority
-        else -1
-    )
-
-    if left_index > right_index:
-        return 1
-    if left_index < right_index:
-        return -1
-    return 0
+_MS_PER_SECOND = 1000
 
 
 def get_roles_for_accounts(accounts: Iterable[dict], config: AWSSSOManagerConfig) -> list[dict]:
@@ -67,33 +41,28 @@ def get_roles_for_accounts(accounts: Iterable[dict], config: AWSSSOManagerConfig
     return roles
 
 
-def get_role_credentials(accounts_info: dict, config: AWSSSOManagerConfig, role: dict) -> dict:
-    """Retrieve credentials for a role.
+def get_role_credentials(
+    config: AWSSSOManagerConfig, role: Role, *, client: Any | None = None
+) -> RoleCredentials:
+    """Retrieve credentials for one Identity Center role.
 
     Args:
-        accounts_info (Dict): Information about accounts.
-        config (AWSSSOManagerConfig): AWSSSOManagerConfig.
-        role (Dict): The role for which credentials are to be retrieved.
+        config: Config holding a valid access token.
+        role: The role to fetch credentials for.
+        client: Shared ``sso`` client. Pass one when calling from threads: creating clients
+            concurrently from boto3's default session is not thread-safe.
 
     Returns:
-        Dict: A dictionary containing role credentials.
+        The role's temporary credentials.
     """
-    sso_client = boto3.client("sso", region_name=config.region)
-    account_id = role["accountId"]
-
+    sso_client = client or boto3.client("sso", region_name=config.region)
     role_credentials = sso_client.get_role_credentials(
-        accessToken=config.access_token, accountId=account_id, roleName=role["roleName"]
+        accessToken=config.access_token, accountId=role.account_id, roleName=role.role_name
     )["roleCredentials"]
 
-    return {
-        f"{account_id}_{role['roleName']}": {
-            "aws_access_key_id": role_credentials["accessKeyId"],
-            "aws_secret_access_key": role_credentials["secretAccessKey"],
-            "aws_session_token": role_credentials["sessionToken"],
-            "aws_sso_role_name": role["roleName"],
-            "aws_sso_account_id": account_id,
-            "aws_sso_account_name": accounts_info[account_id]["accountName"],
-            "aws_sso_account_email": accounts_info[account_id]["emailAddress"],
-            "aws_sso_updated_at": time.ctime(),
-        }
-    }
+    return RoleCredentials(
+        access_key_id=role_credentials["accessKeyId"],
+        secret_access_key=role_credentials["secretAccessKey"],
+        session_token=role_credentials["sessionToken"],
+        expiration=datetime.fromtimestamp(role_credentials["expiration"] / _MS_PER_SECOND, UTC),
+    )

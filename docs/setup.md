@@ -3,9 +3,9 @@
 ## Install
 
 ```shell
-uv tool install awsssomanager
-# or
-pip install awsssomanager
+uv tool install awsssomanager          # IAM Identity Center
+uv tool install 'awsssomanager[okta]'  # adds the Okta SAML provider
+# or: pip install awsssomanager / pip install 'awsssomanager[okta]'
 ```
 
 ## Development
@@ -39,4 +39,5 @@ Options:
 Commands:
   configure  Configure aws-sso-manager from CONFIG_FILE and log in.
   login      Refresh credentials using the saved configuration.
+  roles      List every available role and the profiles it would get.
 ```
