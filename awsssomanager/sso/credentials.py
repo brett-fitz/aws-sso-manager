@@ -1,34 +1,33 @@
-"""aws-sso-manager sso module: roles"""
+"""aws-sso-manager sso module: roles."""
+
 from concurrent.futures import ThreadPoolExecutor
 import configparser
+from functools import partial
 import logging
 import sys
 import time
-from typing import Dict
 
 import boto3
 
 from awsssomanager import CREDENTIALS_FILE
 from awsssomanager.config import AWSSSOManagerConfig
-from awsssomanager.sso.roles import compare_roles, get_role_credentials, get_roles_for_accounts
 from awsssomanager.sso.device import start_device_authorization
+from awsssomanager.sso.roles import compare_roles, get_role_credentials, get_roles_for_accounts
 from awsssomanager.sso.token import create_token
 
 
 __all__ = [
     "get_accounts_info",
     "get_credentials",
-    "get_roles_for_accounts",
-    "get_role_credentials",
     "update_credentials_for_role",
     "load_credentials",
-    "save_credentials"
+    "save_credentials",
 ]
 
 logger = logging.getLogger(__name__)
 
 
-def get_accounts_info(config: AWSSSOManagerConfig) -> Dict:
+def get_accounts_info(config: AWSSSOManagerConfig) -> dict:
     """Retrieve account information for all accounts that a user
     has access to.
 
@@ -44,7 +43,7 @@ def get_accounts_info(config: AWSSSOManagerConfig) -> Dict:
 
     def process_page(page):
         for account in page["accountList"]:
-            logger.info(f'found account: {account["accountId"]}')
+            logger.info(f"found account: {account['accountId']}")
             accounts_info[account["accountId"]] = {
                 "accountId": account["accountId"],
                 "accountName": account["accountName"],
@@ -69,7 +68,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
     credentials = load_credentials()
     sso_client = boto3.client("sso-oidc", region_name=config.region)
 
-    logger.info('Retrieving credentials')
+    logger.info("Retrieving credentials")
     while True:
         try:
             if time.time() > config.access_token_expires_at:
@@ -93,12 +92,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
             # Get credentials for all roles
             new_credentials = {}
             with ThreadPoolExecutor(max_workers=10) as pool:
-                results = list(pool.map(
-                    lambda role: get_role_credentials(
-                        accounts_info=accounts, config=config, role=role
-                    ),
-                    roles,
-                ))
+                results = list(pool.map(partial(get_role_credentials, accounts, config), roles))
 
             # Merge the dictionaries returned by the function into new_credentials
             for result in results:
@@ -107,9 +101,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
             # Iterate over roles for account default permissions
             with ThreadPoolExecutor(max_workers=10) as pool:
                 pool.map(
-                    lambda role: update_credentials_for_role(
-                        config, new_credentials, accounts, role
-                    ),
+                    partial(update_credentials_for_role, config, new_credentials, accounts),
                     roles,
                 )
 
@@ -117,7 +109,7 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
             if config.login_account in new_credentials:
                 new_credentials["default"] = new_credentials[config.login_account].copy()
             else:
-                logger.warning(f'{config.login_account} not found in credentials')
+                logger.warning(f"{config.login_account} not found in credentials")
 
             credentials.update(new_credentials)
             credentials = save_credentials(credentials)
@@ -130,14 +122,12 @@ def get_credentials(config: AWSSSOManagerConfig) -> None:
 
 
 def update_credentials_for_role(
-    config: AWSSSOManagerConfig,
-    new_credentials: Dict,
-    accounts_info: Dict,
-    role: Dict
+    config: AWSSSOManagerConfig, new_credentials: dict, accounts_info: dict, role: dict
 ) -> None:
     """Update credentials for a role.
 
     Args:
+        config (AWSSSOManagerConfig): AWSSSOManagerConfig (supplies role priority).
         new_credentials (Dict): The new credentials to be updated.
         accounts_info (Dict): Information about accounts.
         role (Dict): The role for which credentials are to be updated.
@@ -161,7 +151,7 @@ def update_credentials_for_role(
             new_credentials[account_id] = new_credentials[profile_name].copy()
             new_credentials[account_name] = new_credentials[profile_name].copy()
         except KeyError:
-            logger.error(f'Could not update credentials for profile: {profile_name}')
+            logger.error(f"Could not update credentials for profile: {profile_name}")
 
 
 def load_credentials() -> configparser.ConfigParser:

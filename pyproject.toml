@@ -1,43 +1,156 @@
-[tool.poetry]
+[project]
 name = "awsssomanager"
 version = "0.3.0"
-description = "AWS SSO Manager"
-authors = ["Brett Fitzpatrick"]
-license = "MIT"
+description = "Manage AWS credentials for every account and role you can reach through AWS SSO"
+authors = [{ name = "Brett Fitzpatrick", email = "brettfitz@protonmail.com" }]
 readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+keywords = ["aws", "aws-sso", "iam-identity-center", "credentials", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+]
+dependencies = [
+    "boto3>=1.44.3",
+    "click>=8.5.1",
+    "coloredlogs>=15.0.1",
+    "pyyaml>=6.0.3",
+    "yamale>=6.1.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-click = "^8.1.8"
-coloredlogs = "^15.0.1"
-boto3 = "^1.37.23"
-pyyaml = "^6.0.2"
-yamale = "^6.0.0"
-
-
-[tool.poetry.group.dev.dependencies]
-pylint = "^3.3.6"
-
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.5"
-pytest-cov = "^7.0.0"
-
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.10"
-mkdocs-minify-plugin = "^0.8.0"
-mkdocs-table-reader-plugin = "^3.1.0"
-mkdocs-include-markdown-plugin = "^7.1.5"
-mkdocs-gen-files = "^0.5.0"
-mkdocs-literate-nav = "^0.6.2"
-mkdocs-section-index = "^0.3.9"
-mkdocstrings = {extras = ["python"], version = "^0.29.0"}
-
-[tool.poetry.scripts]
+[project.scripts]
 aws-sso-manager = "awsssomanager.cli.cli:cli"
 
+[project.urls]
+Homepage = "https://github.com/brett-fitz/aws-sso-manager"
+Documentation = "https://aws-sso-manager.repos.brettfitz.me/"
+Repository = "https://github.com/brett-fitz/aws-sso-manager"
+Issues = "https://github.com/brett-fitz/aws-sso-manager/issues"
+Changelog = "https://github.com/brett-fitz/aws-sso-manager/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.5",
+    "ty>=0.0.104",
+]
+test = [
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.17.0",
+]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.8.1",
+    "mkdocs-minify-plugin>=0.8.0",
+    "mkdocs-table-reader-plugin>=4.0.2",
+    "mkdocs-include-markdown-plugin>=7.3.2",
+    "mkdocs-gen-files>=0.6.1",
+    "mkdocs-literate-nav>=0.6.3",
+    "mkdocs-section-index>=0.3.12",
+    "mkdocstrings[python]>=1.0.8",
+]
+
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["awsssomanager"]
+
+# ---------------------------------------------------------------------------
+# ruff
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle
+    "F",      # pyflakes
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "SIM",    # flake8-simplify
+    "I",      # isort
+    "D",      # pydocstyle
+]
+ignore = [
+    "D205",   # false positives on multi-line summary
+]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+force-sort-within-sections = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D100", "D101", "D102", "D103", "D104"]
+"scripts/**" = ["D103"]
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--import-mode=importlib",
+]
+markers = [
+    "integration: marks tests as integration tests requiring live AWS / IdP access",
+]
+
+# ---------------------------------------------------------------------------
+# coverage
+# ---------------------------------------------------------------------------
+[tool.coverage.run]
+source = ["awsssomanager"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/.venv/*",
+]
+relative_files = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+precision = 2
+
+# ---------------------------------------------------------------------------
+# ty
+# ---------------------------------------------------------------------------
+[tool.ty.environment]
+python-version = "3.11"
+
+[tool.ty.rules]
+invalid-type-form = "warn"

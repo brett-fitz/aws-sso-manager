@@ -1,2 +1,1 @@
-"""awsssomanager.cli module"""
-
+"""awsssomanager.cli module."""

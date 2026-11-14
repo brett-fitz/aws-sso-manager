@@ -1,27 +1,20 @@
-"""aws-sso-manager sso module: roles"""
+"""aws-sso-manager sso module: roles."""
+
+from collections.abc import Iterable
 import logging
 import time
-from typing import Dict, List
 
 import boto3
 
 from awsssomanager.config.config import AWSSSOManagerConfig
 
 
-__all__ = [
-    "compare_roles",
-    "get_roles_for_accounts",
-    "get_role_credentials"
-]
+__all__ = ["compare_roles", "get_roles_for_accounts", "get_role_credentials"]
 
 logger = logging.getLogger(__name__)
 
 
-def compare_roles(
-    config: AWSSSOManagerConfig,
-    left_role_name: str,
-    right_role_name: str
-) -> int:
+def compare_roles(config: AWSSSOManagerConfig, left_role_name: str, right_role_name: str) -> int:
     """Compare two roles by name and return
         1 if the first is higher priority,
         -1 if the second is higher,
@@ -36,12 +29,12 @@ def compare_roles(
         _description_
     """
     left_index = (
-        config.role_priority.index(left_role_name)
-        if left_role_name in config.role_priority else -1
+        config.role_priority.index(left_role_name) if left_role_name in config.role_priority else -1
     )
     right_index = (
         config.role_priority.index(right_role_name)
-        if right_role_name in config.role_priority else -1
+        if right_role_name in config.role_priority
+        else -1
     )
 
     if left_index > right_index:
@@ -51,7 +44,7 @@ def compare_roles(
     return 0
 
 
-def get_roles_for_accounts(accounts: List[Dict], config: AWSSSOManagerConfig) -> List[Dict]:
+def get_roles_for_accounts(accounts: Iterable[dict], config: AWSSSOManagerConfig) -> list[dict]:
     """Retrieve roles for a list of accounts.
 
     Args:
@@ -74,11 +67,7 @@ def get_roles_for_accounts(accounts: List[Dict], config: AWSSSOManagerConfig) ->
     return roles
 
 
-def get_role_credentials(
-    accounts_info: Dict,
-    config: AWSSSOManagerConfig,
-    role: Dict
-) -> Dict:
+def get_role_credentials(accounts_info: dict, config: AWSSSOManagerConfig, role: dict) -> dict:
     """Retrieve credentials for a role.
 
     Args:
@@ -93,7 +82,7 @@ def get_role_credentials(
     account_id = role["accountId"]
 
     role_credentials = sso_client.get_role_credentials(
-        accessToken=config.access_token, accountId=account_id, roleName=role['roleName']
+        accessToken=config.access_token, accountId=account_id, roleName=role["roleName"]
     )["roleCredentials"]
 
     return {

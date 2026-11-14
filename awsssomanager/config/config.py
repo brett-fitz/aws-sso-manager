@@ -1,7 +1,8 @@
-"""awsssomanager.config module: config"""
+"""awsssomanager.config module: config."""
+
 import logging
 from os import makedirs
-from typing import Dict, List
+from pathlib import Path
 
 import yaml
 
@@ -10,114 +11,116 @@ from awsssomanager.utils import is_valid_dir, is_valid_file
 from awsssomanager.utils.validators import validate_yaml
 
 
-__all__ = [
-    "AWSSSOManagerConfig"
-]
+__all__ = ["AWSSSOManagerConfig"]
 
 logger = logging.getLogger(__name__)
 
 
 class AWSSSOManagerConfig:
-    """AWSSSOManagerConfig Class
-    """
+    """The aws-sso-manager config file plus the device registration state written back to it."""
 
-    def __init__(self, config: Dict):
-        self.config: Dict = config
-        if not self.config.get('device'):
-            self.config['device'] = {}
+    def __init__(self, config: dict):
+        """Wrap a parsed config dict, ensuring the generated ``device`` block exists.
+
+        Args:
+            config: Parsed aws-sso-manager YAML config.
+        """
+        self.config: dict = config
+        if not self.config.get("device"):
+            self.config["device"] = {}
 
     @property
     def access_token(self) -> str:
-        """Get the device accessToken
+        """Get the device accessToken.
 
         Returns:
             accessToken.
         """
-        return self.config['device']['accessToken']
+        return self.config["device"]["accessToken"]
 
     @property
     def access_token_expires_at(self) -> float:
-        """Get the device accessTokenExpiresAt
+        """Get the device accessTokenExpiresAt.
 
         Returns:
             accessTokenExpiresAt.
         """
-        return float(self.config['device'].get('accessTokenExpiresAt', '0'))
+        return float(self.config["device"].get("accessTokenExpiresAt", "0"))
 
     @property
     def client_id(self) -> str:
-        """Get the device clientId
+        """Get the device clientId.
 
         Returns:
             clientId.
         """
-        return self.config['device']['clientId']
+        return self.config["device"]["clientId"]
 
     @property
     def client_secret(self) -> str:
-        """Get the device clientSecret
+        """Get the device clientSecret.
 
         Returns:
             clientSecret.
         """
-        return self.config['device']['clientSecret']
+        return self.config["device"]["clientSecret"]
 
     @property
     def client_secret_expires_at(self) -> float:
-        """Get the device clientSecretExpiresAt
+        """Get the device clientSecretExpiresAt.
 
         Returns:
             clientSecretExpiresAt.
         """
-        return float(self.config['device']['clientSecretExpiresAt'])
+        return float(self.config["device"]["clientSecretExpiresAt"])
 
     @property
     def device_code(self) -> str:
-        """Get the device deviceCode
+        """Get the device deviceCode.
 
         Returns:
             deviceCode.
         """
-        return self.config['device']['deviceCode']
+        return self.config["device"]["deviceCode"]
 
     @property
     def login_account(self) -> str:
-        """Get the default loginAccount
+        """Get the default loginAccount.
 
         Returns:
             loginAccount.
         """
-        return self.config['default']['loginAccount']
+        return self.config["default"]["loginAccount"]
 
     @property
     def region(self) -> str:
-        """Get the aws sso region
+        """Get the aws sso region.
 
         Returns:
             AWS region.
         """
-        return self.config['region']
+        return self.config["region"]
 
     @property
-    def role_priority(self) -> List[str]:
-        """Get the role priority list
+    def role_priority(self) -> list[str]:
+        """Get the role priority list.
 
         Returns:
             Role priority list.
         """
-        return self.config['role_priority']
+        return self.config["role_priority"]
 
     @property
     def sso_domain(self) -> str:
-        """Get the ssoDomain
+        """Get the ssoDomain.
 
         Returns:
             ssoDomain.
         """
-        return self.config['ssoDomain']
+        return self.config["ssoDomain"]
 
     @classmethod
-    def from_config(cls, config_file: str):
+    def from_config(cls, config_file: str | Path) -> "AWSSSOManagerConfig":
         """Create a AWS SSO Manager config from a user config file.
 
         Args:
@@ -130,31 +133,30 @@ class AWSSSOManagerConfig:
         validate_yaml(config_file, SCHEMA_PATH)
 
         # load config file
-        with open(config_file, 'r', encoding='utf-8') as file:
+        with open(config_file, encoding="utf-8") as file:
             config = yaml.safe_load(file)
         return cls(config=config)
 
     @staticmethod
     def check_aws_dir_exists() -> bool:
-        """Checks if ~/.aws exists
+        """Checks if ~/.aws exists.
 
         Returns:
             bool: True or False based on whether the directory exists or not.
         """
         try:
             is_valid_dir(AWS_DIR)
-            logger.info('Found aws directory at ~/.aws/')
+            logger.info("Found aws directory at ~/.aws/")
             return True
         except FileNotFoundError:
-            logger.warning('Directory ~/.aws/ does not exist!')
+            logger.warning("Directory ~/.aws/ does not exist!")
             return False
 
     @staticmethod
     def create_aws_dir() -> None:
-        """Creates the default ~/.aws directory if it does not already exist.
-        """
+        """Creates the default ~/.aws directory if it does not already exist."""
         if not AWSSSOManagerConfig.check_aws_dir_exists():
-            logger.info('Creating directory ~/.aws/')
+            logger.info("Creating directory ~/.aws/")
             makedirs(AWS_DIR)
 
     @staticmethod
@@ -166,15 +168,14 @@ class AWSSSOManagerConfig:
         """
         try:
             is_valid_file(filename=SSO_MANAGER_CONFIG_FILE)
-            logger.info(f'Found aws-sso-manager config file: {SSO_MANAGER_CONFIG_FILE}')
+            logger.info(f"Found aws-sso-manager config file: {SSO_MANAGER_CONFIG_FILE}")
             return True
         except FileNotFoundError:
-            logger.warning(f'File {SSO_MANAGER_CONFIG_FILE} does not exist')
+            logger.warning(f"File {SSO_MANAGER_CONFIG_FILE} does not exist")
             return False
 
     def write_config(self) -> None:
-        """Write aws-sso-manger config file
-        """
-        with open(SSO_MANAGER_CONFIG_FILE, 'w', encoding='utf-8') as file:
-            logger.info(f'writing config file {SSO_MANAGER_CONFIG_FILE}')
+        """Write aws-sso-manger config file."""
+        with open(SSO_MANAGER_CONFIG_FILE, "w", encoding="utf-8") as file:
+            logger.info(f"writing config file {SSO_MANAGER_CONFIG_FILE}")
             yaml.safe_dump(self.config, file, default_flow_style=False)

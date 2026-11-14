@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use Deploy Serverless Action
         uses: brett-fitz/devops/actions/deploy-serverless@main
@@ -57,30 +57,22 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup AWS
         uses: brett-fitz/devops/actions/setup-aws@main
 
-      - name: Install Poetry
-        run: pipx install poetry
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up UV
+        uses: astral-sh/setup-uv@v10.3.3
         with:
-          python-version: 3.11
-          architecture: x64
-          cache: poetry
+          enable-cache: true
 
       - name: Install Package
-        working-directory: ./aws-sso-manager/
-        run: |
-          poetry install --no-interaction --no-ansi --with docs
-          echo "PATH=$(poetry env info --path)/bin:$PATH" >> $GITHUB_ENV
+        run: uv sync --group docs
 
       - name: Build Docs
         run: >
-          mkdocs build --no-directory-urls
+          uv run mkdocs build --no-directory-urls
 
       - name: Sync files with S3
         run: >

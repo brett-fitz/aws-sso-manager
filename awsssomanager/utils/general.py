@@ -1,7 +1,7 @@
-"""awsssomanager.utils module: general"""
+"""awsssomanager.utils module: general."""
+
 import logging
 import subprocess
-from typing import Tuple
 
 
 __all__ = [
@@ -11,9 +11,8 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-def run_cmd(command) -> Tuple:
-    """
-    Run a shell command safely.
+def run_cmd(command) -> tuple:
+    """Run a shell command safely.
 
     Args:
         command (str): The command to execute.
@@ -22,11 +21,7 @@ def run_cmd(command) -> Tuple:
         tuple: A tuple containing (stdout, stderr).
     """
     with subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-        shell=True
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True
     ) as process:
         stdout, stderr = process.communicate()
         return stdout, stderr
