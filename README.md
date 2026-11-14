@@ -3,58 +3,114 @@
 [![License](https://img.shields.io/github/license/brett-fitz/aws-sso-manager?style=flat-square)](https://github.com/brett-fitz/aws-sso-manager/blob/main/LICENSE)
 [![Issues](https://img.shields.io/github/issues/brett-fitz/aws-sso-manager?style=flat-square)](https://github.com/brett-fitz/aws-sso-manager/issues)
 
-A simple AWS SSO Manager that makes authenticating between multiple profiles, roles, and
-SSO domains a breeze. 
+A CLI that writes short-lived AWS credentials into `~/.aws/credentials` for every account and
+role you choose, from one sign-in. It works with two kinds of single sign-on:
 
-## Overview
+| Provider | Use it when | How it signs in |
+|---|---|---|
+| `sso` (default) | Your org uses **AWS IAM Identity Center** (`<domain>.awsapps.com/start`) | Device authorization in your browser |
+| `okta` | Your org uses Okta's **AWS Account Federation** app (SAML straight into IAM roles, the setup saml2aws targets) | Okta sign-in in a browser, with any MFA |
 
-`aws-sso-manager` is a simple cli to manage auth for aws sso accounts and roles. 
+With the `okta` provider, one Okta sign-in returns a SAML assertion listing every role you are
+assigned. aws-sso-manager exchanges that one assertion for credentials on each role you
+selected, so you no longer run a separate login per profile.
 
 ## Setup
 
 ```shell
-uv tool install awsssomanager
-# or
-pip install awsssomanager
+uv tool install awsssomanager          # IAM Identity Center only
+uv tool install 'awsssomanager[okta]'  # adds the Okta provider
+# or: pip install awsssomanager / pip install 'awsssomanager[okta]'
 ```
 
-### Config file
+The Okta provider drives Google Chrome by default. To use Playwright's bundled Chromium
+instead, set `okta.browser: chromium` and run `playwright install chromium`.
 
-Create a config file. You can create a config file for each `ssoDomain`.
+### Config file: IAM Identity Center
 
 ```yaml
-ssoDomain: 'myssodomain'       # Your aws sso domain (<sso domain>.awsapps.com)
-region: 'us-east-1'            # The aws region where your aws sso is configured.
+ssoDomain: 'myssodomain'       # <ssoDomain>.awsapps.com
+region: 'us-east-1'            # region your Identity Center lives in (not where your resources are)
 
 default:
-  loginAccount: '1234567890'   # The default account you want mapped to the profile: default
+  loginAccount: '1234567890'   # account copied into the `default` profile
 
-role_priority:
+role_priority:                 # lowest to highest; picks the role behind <account_id>/<account_name>
   - "ViewOnlyAccess"
   - "PowerUserAccess"
-  - "PowerUserPlus"
   - "AdministratorAccess"
 ```
 
-### Configure ssoDomain
+### Config file: Okta
 
-```shell
-$ aws-sso-manager configure /path/to/config/file
+```yaml
+provider: okta
+okta:
+  # The AWS Account Federation app's embed link (the `url` in ~/.saml2aws).
+  appUrl: 'https://example.okta.com/home/amazon_aws/0oaXXXXXXXXXXXXXXX/272'
+  sessionDuration: 3600        # optional; capped by each role's max session duration
+  browser: chrome              # optional: chrome | chrome-beta | msedge | chromium
+  timeout: 300                 # optional: seconds allowed to finish signing in
+region: us-east-1              # optional STS region
+
+default:
+  loginAccount: dev         # an account id, account alias, or profile name below
+
+profiles:
+  easyProfiles: false          # write only the profiles named here
+  include:
+    - role: Okta-ReadOnly-dev
+      name: dev
+    - role: Okta-Developer-dev
+      name: developer
+  exclude:
+    - role: '*BreakGlass*'
 ```
 
-All done!
+### Choosing which roles get profiles
+
+The optional `profiles` block works with both providers. Roles it leaves out are never
+requested, not just hidden.
+
+- **`include`**: rules that select roles. If you omit `include`, every role is selected.
+- **`exclude`**: rules that drop roles. Exclusion always wins.
+- **Rule fields**: each rule has `account` (matched against the account id *or* alias) and/or
+  `role` (matched against the role name). Both are case-insensitive globs (`*`, `?`, `[...]`).
+- **`name`**: on an include rule, names the profile. It must match exactly one role.
+- **`easyProfiles`** (default `true`): also writes the generated names below for every selected
+  role.
+
+Quote account ids (`'012345678901'`) so YAML keeps leading zeros.
+
+### Configure
+
+```shell
+$ aws-sso-manager configure /path/to/config.yml
+```
+
+Your config is saved to `~/.aws/aws-sso-manager.yml`. Edit that file, or re-run `configure -R`,
+to change it later.
 
 ## Daily Operation
 
-Whenever your tokens expire, you will need to run the command:
-
 ```shell
-$ aws-sso-manager login
+$ aws-sso-manager roles   # see every role you can reach and the profiles it would get
+$ aws-sso-manager login   # refresh credentials
 ```
+
+`roles` signs in but writes no credentials. Use it to check your include/exclude rules before
+logging in.
+
+aws-sso-manager only rewrites the sections it owns in `~/.aws/credentials`, which are marked
+`x_managed_by = aws-sso-manager`. When a role stops being selected, its profile is removed on
+the next login. Sections written by other tools, such as saml2aws, are never touched.
+
+With Okta, the browser keeps a dedicated profile under `~/.aws/aws-sso-manager/browser/`. While
+your Okta session is alive, `login` usually completes without a prompt.
 
 ## Easy Profiles
 
-Profiles are automatically generated in the following formats and can be used directly after credentials are acquired:
+With `easyProfiles` on, these profiles are generated for selected roles:
 
 ```
 <account_id>_<role_name>
@@ -65,7 +121,7 @@ Profiles are automatically generated in the following formats and can be used di
 ### Usage
 
 ```shell
-$ AWS_PROFILE=<proile_name> aws s3 ls
+$ AWS_PROFILE=<profile_name> aws s3 ls
 ```
 
 **Example**

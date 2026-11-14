@@ -1,7 +1,6 @@
-"""aws-sso-manager sso module: roles."""
+"""IAM Identity Center login: token, role discovery, selection, and credentials file."""
 
 from concurrent.futures import ThreadPoolExecutor
-import configparser
 from functools import partial
 import logging
 import sys
@@ -9,22 +8,26 @@ import time
 
 import boto3
 
-from awsssomanager import CREDENTIALS_FILE
 from awsssomanager.config import AWSSSOManagerConfig
+from awsssomanager.credentials_file import write_profiles
+from awsssomanager.models import Role
+from awsssomanager.profiles import build_profiles, plan_profiles, select_roles
 from awsssomanager.sso.device import start_device_authorization
-from awsssomanager.sso.roles import compare_roles, get_role_credentials, get_roles_for_accounts
+from awsssomanager.sso.roles import get_role_credentials, get_roles_for_accounts
 from awsssomanager.sso.token import create_token
 
 
 __all__ = [
+    "discover_roles",
+    "ensure_access_token",
     "get_accounts_info",
     "get_credentials",
-    "update_credentials_for_role",
-    "load_credentials",
-    "save_credentials",
 ]
 
 logger = logging.getLogger(__name__)
+
+_MAX_WORKERS = 10
+_UNAUTHORIZED_RETRY_SECONDS = 30
 
 
 def get_accounts_info(config: AWSSSOManagerConfig) -> dict:
@@ -56,125 +59,86 @@ def get_accounts_info(config: AWSSSOManagerConfig) -> dict:
     return accounts_info
 
 
-def get_credentials(config: AWSSSOManagerConfig) -> None:
-    """Retrieve fresh AWS credentials in a loop.
+def ensure_access_token(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
+    """Create a new access token when the current one has expired.
 
     Args:
-        config (AWSSSOManagerConfig): AWSSSOManagerConfig.
+        config: Config with a registered device.
 
     Returns:
-        None
+        The config, holding a current access token.
     """
-    credentials = load_credentials()
-    sso_client = boto3.client("sso-oidc", region_name=config.region)
+    if time.time() <= config.access_token_expires_at:
+        return config
+    sso_oidc = boto3.client("sso-oidc", region_name=config.region)
+    try:
+        return create_token(config)
+    except sso_oidc.exceptions.InvalidGrantException:
+        # invalid grant, reauthorize device
+        logger.warning("Unable to create token, reauthorizing...")
+        return start_device_authorization(config)
+    except Exception as error:  # preserve the historical hard exit on unknown failures
+        logger.error(f"Unable to create token, unknown exception: {error}")
+        sys.exit(1)
+
+
+def discover_roles(config: AWSSSOManagerConfig) -> list[Role]:
+    """List every account and role the access token can reach.
+
+    Args:
+        config: Config holding a current access token.
+
+    Returns:
+        Roles in account order.
+    """
+    accounts = get_accounts_info(config=config)
+    return [
+        Role(
+            account_id=role["accountId"],
+            role_name=role["roleName"],
+            account_name=accounts[role["accountId"]]["accountName"],
+        )
+        for role in get_roles_for_accounts(accounts.values(), config)
+    ]
+
+
+def get_credentials(config: AWSSSOManagerConfig) -> None:
+    """Fetch credentials for the selected roles and write their profiles.
+
+    Only roles that pass the ``profiles`` include/exclude rules are fetched.
+
+    Args:
+        config: Config with a registered device.
+    """
+    sso_oidc = boto3.client("sso-oidc", region_name=config.region)
+    selection = config.profile_selection
 
     logger.info("Retrieving credentials")
     while True:
         try:
-            if time.time() > config.access_token_expires_at:
-                # token expired, create a new one
-                try:
-                    config = create_token(config)
-                except sso_client.exceptions.InvalidGrantException:
-                    # invalid grant, reauthorize device
-                    logger.warning("Unable to create token, reauthorizing...")
-                    config = start_device_authorization(config)
-                except Exception as error:
-                    logger.error(f"Unable to create token, unknown exception: {error}")
-                    sys.exit(1)
+            config = ensure_access_token(config)
+            roles = discover_roles(config)
+            selected = select_roles(roles, selection)
+            logger.info(f"selected {len(selected)} of {len(roles)} role(s)")
 
-            # Get list of accounts user has access to
-            accounts = get_accounts_info(config=config)
+            wanted = [item.role for item in selected]
+            sso = boto3.client("sso", region_name=config.region)  # one client, shared by threads
+            with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as pool:
+                fetched = list(pool.map(partial(get_role_credentials, config, client=sso), wanted))
 
-            # Get list of roles (for each account) the user has access to
-            roles = get_roles_for_accounts(accounts.values(), config)
-
-            # Get credentials for all roles
-            new_credentials = {}
-            with ThreadPoolExecutor(max_workers=10) as pool:
-                results = list(pool.map(partial(get_role_credentials, accounts, config), roles))
-
-            # Merge the dictionaries returned by the function into new_credentials
-            for result in results:
-                new_credentials.update(result)
-
-            # Iterate over roles for account default permissions
-            with ThreadPoolExecutor(max_workers=10) as pool:
-                pool.map(
-                    partial(update_credentials_for_role, config, new_credentials, accounts),
-                    roles,
-                )
-
-            # get default credentials
-            if config.login_account in new_credentials:
-                new_credentials["default"] = new_credentials[config.login_account].copy()
-            else:
-                logger.warning(f"{config.login_account} not found in credentials")
-
-            credentials.update(new_credentials)
-            credentials = save_credentials(credentials)
+            plan = plan_profiles(
+                selected,
+                role_priority=config.role_priority,
+                easy_profiles=selection.easy_profiles,
+                login_account=config.login_account,
+            )
+            profiles = build_profiles(
+                plan, dict(zip(wanted, fetched, strict=True)), source=config.credential_source
+            )
+            write_profiles(profiles, source=config.credential_source, adopt_legacy_sso=True)
             logger.info("Credentials successfully retrieved")
             break  # exit out of cred loop
 
-        except sso_client.exceptions.UnauthorizedClientException:
+        except sso_oidc.exceptions.UnauthorizedClientException:
             logger.info("Access token unauthorized, sleeping and refetching credentials...")
-            time.sleep(30)
-
-
-def update_credentials_for_role(
-    config: AWSSSOManagerConfig, new_credentials: dict, accounts_info: dict, role: dict
-) -> None:
-    """Update credentials for a role.
-
-    Args:
-        config (AWSSSOManagerConfig): AWSSSOManagerConfig (supplies role priority).
-        new_credentials (Dict): The new credentials to be updated.
-        accounts_info (Dict): Information about accounts.
-        role (Dict): The role for which credentials are to be updated.
-
-    Returns:
-        None
-    """
-    account_id = role["accountId"]
-    role_name = role["roleName"]
-    profile_name = f"{account_id}_{role_name}"
-    account_name = accounts_info[account_id]["accountName"]
-
-    # If the account id alias is already in credentials,
-    # check to see if we should override for higher priority
-    if account_id in new_credentials:
-        if compare_roles(config, role_name, new_credentials[account_id]["aws_sso_role_name"]) > 0:
-            new_credentials[account_id] = new_credentials[profile_name].copy()
-            new_credentials[account_name] = new_credentials[profile_name].copy()
-    else:
-        try:
-            new_credentials[account_id] = new_credentials[profile_name].copy()
-            new_credentials[account_name] = new_credentials[profile_name].copy()
-        except KeyError:
-            logger.error(f"Could not update credentials for profile: {profile_name}")
-
-
-def load_credentials() -> configparser.ConfigParser:
-    """Load AWS credentials from an INI file.
-
-    Returns:
-        configparser.ConfigParser: ConfigParser object containing the credentials.
-    """
-    credentials = configparser.ConfigParser()
-    credentials.optionxform = str  # type: ignore
-    credentials.read(CREDENTIALS_FILE)
-    return credentials
-
-
-def save_credentials(credentials: configparser.ConfigParser) -> configparser.ConfigParser:
-    """Save AWS SSO Helper config to an INI file.
-
-    Args:
-        credentials (configparser.ConfigParser): ConfigParser object containing the credentials.
-
-    Returns:
-        configparser.ConfigParser: ConfigParser object after saving.
-    """
-    with open(CREDENTIALS_FILE, "w", encoding="utf-8") as file:
-        credentials.write(file)
-    return load_credentials()
+            time.sleep(_UNAUTHORIZED_RETRY_SECONDS)

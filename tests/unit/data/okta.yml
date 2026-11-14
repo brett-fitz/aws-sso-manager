@@ -1,0 +1,21 @@
+provider: okta
+okta:
+  appUrl: 'https://example.okta.com/home/amazon_aws/0oaEXAMPLE/272'
+  sessionDuration: 3600
+  browser: chromium
+
+default:
+  loginAccount: dev
+
+profiles:
+  easyProfiles: false
+  include:
+    - role: Okta-ReadOnly-dev
+      name: dev
+    - account: 210987654321
+      role: Okta-SecretsEditor-*
+      name: prod
+    - account: logs
+      role: 'Okta-*'
+  exclude:
+    - role: '*BreakGlass*'
