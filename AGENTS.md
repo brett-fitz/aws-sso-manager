@@ -15,6 +15,7 @@ into `~/.aws/credentials` for every account and role a user can reach, with easy
 - ty for type checking
 - pytest for testing with pytest-cov for coverage
 - boto3 for AWS APIs, click for the CLI, yamale for config validation
+- Optional `okta` extra: Playwright (browser sign-in), httpx, defusedxml
 - mkdocs-material for docs (`docs/`, `mkdocs.yml`)
 
 ## Common Development Commands
@@ -54,20 +55,39 @@ task docs:build # uv run mkdocs build --no-directory-urls
 ```
 awsssomanager/
 ├── __init__.py          # Re-exports path constants
-├── constants.py         # ~/.aws paths, schema path
-├── cli/cli.py           # click group: `configure`, `login`
+├── constants.py         # ~/.aws paths, schema path, browser profile dir, default STS region
+├── errors.py            # AWSSSOManagerError: expected failures the CLI prints without traceback
+├── models.py            # Role, RoleCredentials (provider-neutral)
+├── profiles.py          # include/exclude selection, profile naming (easy/explicit/default),
+│                        #   role_priority, rendering credentials sections
+├── credentials_file.py  # ~/.aws/credentials read/write: atomic, 0600, prunes only owned sections
+├── cli/cli.py           # click group: `configure`, `login`, `roles`
 ├── config/
-│   ├── config.py        # AWSSSOManagerConfig: user config + generated device state
-│   └── schema.yml       # yamale schema for the user config
-├── sso/                 # AWS IAM Identity Center
+│   ├── config.py        # AWSSSOManagerConfig: user config + generated device state + validate()
+│   └── schema.yml       # yamale schema (strict: unknown keys are errors)
+├── sso/                 # provider: sso (AWS IAM Identity Center)
 │   ├── device.py        # sso-oidc client registration + device authorization
 │   ├── token.py         # sso-oidc CreateToken
-│   ├── roles.py         # ListAccountRoles, GetRoleCredentials, role priority
-│   └── credentials.py   # orchestration + ~/.aws/credentials read/write
+│   ├── roles.py         # ListAccountRoles, GetRoleCredentials -> RoleCredentials
+│   └── credentials.py   # token -> discover -> select -> fetch -> write
+├── okta/                # provider: okta (Okta AWS Account Federation, SAML -> IAM roles)
+│   ├── browser.py       # Playwright: capture SAMLResponse posted to signin.aws.amazon.com/saml
+│   ├── saml.py          # defusedxml parse of the assertion's Role / SessionDuration attributes
+│   ├── accounts.py      # account aliases from the AWS SAML sign-in page (httpx, best effort)
+│   ├── sts.py           # AssumeRoleWithSAML per role, in parallel, from one assertion
+│   └── login.py         # sign in -> discover -> select -> assume -> write
 └── utils/               # shell + file/schema validation helpers
 
-tests/unit/              # pytest default (data/ holds fixture configs)
+tests/unit/              # pytest default (data/ holds fixture configs; factories.py builders)
 ```
+
+### Providers and optional dependencies
+
+- `okta` needs the `okta` extra (playwright, httpx, defusedxml). `awsssomanager.okta` is
+  imported lazily by the CLI so SSO-only installs work without it — keep it that way.
+- Both providers reduce discovery to `Role` and fetching to `RoleCredentials`; selection,
+  naming and writing live in `profiles.py` / `credentials_file.py` and are shared.
+- Selection runs before credentials are requested: excluded roles must never be assumed.
 
 ### Runtime files
 
@@ -113,6 +133,7 @@ tests/unit/              # pytest default (data/ holds fixture configs)
 - Test edge cases and error scenarios
 - Never touch the real `~/.aws` from unit tests — monkeypatch the path constants onto `tmp_path`
 - Stub AWS calls (botocore `Stubber` or pytest-mock); never call live AWS from unit tests
+- Mock HTTP with respx; the real Playwright browser flow is verified manually
 - Mark integration tests with `@pytest.mark.integration`
 - **MUST run `task format && task lint` before completion**
 

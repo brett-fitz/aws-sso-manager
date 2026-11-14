@@ -1,19 +1,37 @@
 """awsssomanager.config module: config."""
 
 import logging
+import os
 from os import makedirs
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 
-from awsssomanager import AWS_DIR, SCHEMA_PATH, SSO_MANAGER_CONFIG_FILE
+from awsssomanager.constants import (
+    AWS_DIR,
+    DEFAULT_STS_REGION,
+    SCHEMA_PATH,
+    SSO_MANAGER_CONFIG_FILE,
+)
+from awsssomanager.errors import AWSSSOManagerError
+from awsssomanager.profiles import ProfileSelection, ProfileSelectionError
 from awsssomanager.utils import is_valid_dir, is_valid_file
 from awsssomanager.utils.validators import validate_yaml
 
 
-__all__ = ["AWSSSOManagerConfig"]
+__all__ = ["PROVIDER_OKTA", "PROVIDER_SSO", "AWSSSOManagerConfig", "ConfigError"]
 
 logger = logging.getLogger(__name__)
+
+PROVIDER_SSO = "sso"
+PROVIDER_OKTA = "okta"
+DEFAULT_OKTA_BROWSER = "chrome"
+DEFAULT_OKTA_TIMEOUT = 300
+
+
+class ConfigError(AWSSSOManagerError, ValueError):
+    """The config passed schema validation but is inconsistent for its provider."""
 
 
 class AWSSSOManagerConfig:
@@ -84,31 +102,87 @@ class AWSSSOManagerConfig:
         return self.config["device"]["deviceCode"]
 
     @property
-    def login_account(self) -> str:
-        """Get the default loginAccount.
+    def login_account(self) -> str | None:
+        """Account id, account name, or profile name to copy into ``default``, if configured."""
+        value = (self.config.get("default") or {}).get("loginAccount")
+        return None if value is None else str(value)
 
-        Returns:
-            loginAccount.
-        """
-        return self.config["default"]["loginAccount"]
+    @property
+    def provider(self) -> str:
+        """``sso`` (IAM Identity Center, the default) or ``okta`` (Okta SAML federation)."""
+        return self.config.get("provider") or PROVIDER_SSO
 
     @property
     def region(self) -> str:
-        """Get the aws sso region.
-
-        Returns:
-            AWS region.
-        """
-        return self.config["region"]
+        """Identity Center region (sso) or STS region (okta, default us-east-1)."""
+        region = self.config.get("region")
+        if region:
+            return region
+        if self.provider == PROVIDER_OKTA:
+            return DEFAULT_STS_REGION
+        raise ConfigError("'region' is required when provider is sso")
 
     @property
     def role_priority(self) -> list[str]:
-        """Get the role priority list.
+        """Role names from lowest to highest priority (empty when not configured)."""
+        return list(self.config.get("role_priority") or [])
 
-        Returns:
-            Role priority list.
+    @property
+    def _okta(self) -> dict:
+        return self.config.get("okta") or {}
+
+    @property
+    def okta_app_url(self) -> str:
+        """Okta embed link for the AWS Account Federation app."""
+        return self._okta["appUrl"]
+
+    @property
+    def okta_session_duration(self) -> int | None:
+        """Requested credential lifetime in seconds, if configured."""
+        return self._okta.get("sessionDuration")
+
+    @property
+    def okta_browser(self) -> str:
+        """Playwright browser channel used for Okta sign-in."""
+        return self._okta.get("browser") or DEFAULT_OKTA_BROWSER
+
+    @property
+    def okta_timeout(self) -> int:
+        """Seconds allowed to finish the Okta sign-in."""
+        return self._okta.get("timeout") or DEFAULT_OKTA_TIMEOUT
+
+    @property
+    def profile_selection(self) -> ProfileSelection:
+        """The parsed ``profiles`` block."""
+        return ProfileSelection.from_config(self.config.get("profiles"))
+
+    @property
+    def credential_source(self) -> str:
+        """Identity recorded in ``x_source`` on every credentials section this config writes."""
+        if self.provider == PROVIDER_OKTA:
+            return f"okta:{urlparse(self.okta_app_url).hostname}"
+        return f"sso:{self.sso_domain}"
+
+    def validate(self) -> None:
+        """Check the provider-specific rules the yamale schema cannot express.
+
+        Raises:
+            ConfigError: If a field the provider needs is missing or invalid.
         """
-        return self.config["role_priority"]
+        if self.provider == PROVIDER_SSO:
+            missing = [key for key in ("ssoDomain", "region") if not self.config.get(key)]
+            if missing:
+                raise ConfigError(f"provider sso requires: {', '.join(missing)}")
+        else:
+            if not self._okta.get("appUrl"):
+                raise ConfigError("provider okta requires okta.appUrl")
+            parsed = urlparse(self.okta_app_url)
+            if parsed.scheme != "https" or not parsed.hostname:
+                raise ConfigError(f"okta.appUrl must be an https URL, got: {self.okta_app_url}")
+        try:
+            self.profile_selection  # noqa: B018  # parse to surface rule errors early
+        except ProfileSelectionError as error:
+            raise ConfigError(str(error)) from error
 
     @property
     def sso_domain(self) -> str:
@@ -128,6 +202,10 @@ class AWSSSOManagerConfig:
 
         Returns:
             class instance.
+
+        Raises:
+            yamale.YamaleError: If the file does not match the schema.
+            ConfigError: If the file is inconsistent for its provider.
         """
         # validate config file
         validate_yaml(config_file, SCHEMA_PATH)
@@ -135,7 +213,9 @@ class AWSSSOManagerConfig:
         # load config file
         with open(config_file, encoding="utf-8") as file:
             config = yaml.safe_load(file)
-        return cls(config=config)
+        instance = cls(config=config)
+        instance.validate()
+        return instance
 
     @staticmethod
     def check_aws_dir_exists() -> bool:
@@ -175,7 +255,9 @@ class AWSSSOManagerConfig:
             return False
 
     def write_config(self) -> None:
-        """Write aws-sso-manger config file."""
-        with open(SSO_MANAGER_CONFIG_FILE, "w", encoding="utf-8") as file:
+        """Write the aws-sso-manager config file (user-only: it holds device secrets)."""
+        fd = os.open(SSO_MANAGER_CONFIG_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        os.chmod(SSO_MANAGER_CONFIG_FILE, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as file:
             logger.info(f"writing config file {SSO_MANAGER_CONFIG_FILE}")
             yaml.safe_dump(self.config, file, default_flow_style=False)
