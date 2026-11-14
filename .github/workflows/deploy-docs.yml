@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use Deploy Serverless Action
         uses: brett-fitz/devops/actions/deploy-serverless@main
@@ -57,13 +57,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup AWS
         uses: brett-fitz/devops/actions/setup-aws@main
 
       - name: Set up UV
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
