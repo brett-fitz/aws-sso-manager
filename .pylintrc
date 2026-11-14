@@ -1,4 +1,0 @@
-[MESSAGES CONTROL]
-# Format style used to check logging format string. `old` means using %
-# formatting, while `new` is for `{}` formatting.
-disable=logging-fstring-interpolation

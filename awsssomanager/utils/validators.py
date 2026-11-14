@@ -1,22 +1,18 @@
-"""awsssomanager.utils module: validators"""
+"""awsssomanager.utils module: validators."""
+
 import logging
 from pathlib import Path
 
 import yamale
 
 
-__all__ = [
-    "is_valid_dir",
-    "is_valid_file",
-    "validate_yaml"
-]
+__all__ = ["is_valid_dir", "is_valid_file", "validate_yaml"]
 
 logger = logging.getLogger(__name__)
 
 
 def is_valid_dir(directory: str) -> bool:
-    """
-    Check if a directory exists.
+    """Check if a directory exists.
 
     Args:
         directory (str): The directory path to check.
@@ -31,8 +27,7 @@ def is_valid_dir(directory: str) -> bool:
 
 
 def is_valid_file(filename: str) -> bool:
-    """
-    Check if a file exists.
+    """Check if a file exists.
 
     Args:
         filename (str): The name of the file to check.
@@ -46,9 +41,8 @@ def is_valid_file(filename: str) -> bool:
     raise FileNotFoundError(f"File not found: {filename}")
 
 
-def validate_yaml(input_file: str, schema_file: str) -> None:
-    """
-    Validate whether the input YAML file conforms to the specified schema.
+def validate_yaml(input_file: str | Path, schema_file: str | Path) -> None:
+    """Validate whether the input YAML file conforms to the specified schema.
 
     Args:
         input_file (str): Path to the input YAML file.
@@ -61,10 +55,10 @@ def validate_yaml(input_file: str, schema_file: str) -> None:
         None
     """
     # Load schema
-    schema = yamale.make_schema(schema_file)
+    schema = yamale.make_schema(str(schema_file))
 
     # Load data
-    data = yamale.make_data(input_file)
+    data = yamale.make_data(str(input_file))
 
     # Validate
     yamale.validate(schema, data)

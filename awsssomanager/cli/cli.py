@@ -1,4 +1,5 @@
-"""aws-sso-manager.cli module: cli"""
+"""aws-sso-manager.cli module: cli."""
+
 import logging
 
 import click
@@ -10,33 +11,28 @@ from awsssomanager.sso.credentials import get_credentials
 from awsssomanager.sso.device import authorize_device
 
 
-__all__ = [
-    "cli"
-]
+__all__ = ["cli"]
 
 logger = logging.getLogger(__name__)
 
 
 @click.group()
 @click.option("-v", "--verbose", is_flag=True, default=False, help="Verbose logging")
-@click.help_option('-h', '--help')
+@click.help_option("-h", "--help")
 def cli(verbose: bool):
-    """Python CLI Core"""
+    """Manage AWS credentials for every account and role you can reach."""
     log_level = logging.DEBUG if verbose else logging.INFO
     coloredlogs.install(level=log_level)  # root logger
 
 
 @cli.command()
-@click.argument('config_file', type=click.STRING)
+@click.argument("config_file", type=click.STRING)
 @click.option("-R", "--reset", is_flag=True, default=False, help="Reset config and initiate setup")
 def configure(config_file: str, reset: bool) -> None:
-    """Configure AWS SSO Manager"""
+    """Configure aws-sso-manager from CONFIG_FILE and log in."""
     # first check if config file is already present and we have permission to override
     if AWSSSOManagerConfig.check_aws_sso_config_exists() and not reset:
-        logger.error(
-            'config exists and reset flag was not set! '
-            '(hint: -R, --reset to reconfigure)'
-        )
+        logger.error("config exists and reset flag was not set! (hint: -R, --reset to reconfigure)")
         click.get_current_context().exit()
 
     # create directory if needed
@@ -51,11 +47,11 @@ def configure(config_file: str, reset: bool) -> None:
 
 @cli.command()
 def login() -> None:
-    """aws sso login"""
+    """Refresh credentials using the saved configuration."""
     if not AWSSSOManagerConfig.check_aws_sso_config_exists():
         logger.error(
-            'aws-sso-manager does not appear to be configured. '
-            'Try running `aws-sso-manager configure`.'
+            "aws-sso-manager does not appear to be configured. "
+            "Try running `aws-sso-manager configure`."
         )
         click.get_current_context().exit()
     config = AWSSSOManagerConfig.from_config(config_file=SSO_MANAGER_CONFIG_FILE)

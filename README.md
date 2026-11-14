@@ -13,9 +13,9 @@ SSO domains a breeze.
 ## Setup
 
 ```shell
-pip3 install awsssomanager
-or
-poetry add awsssomanager
+uv tool install awsssomanager
+# or
+pip install awsssomanager
 ```
 
 ### Config file
@@ -81,8 +81,8 @@ $ AWS_PROFILE=1234567890_AdministratorAccess aws s3 ls
 ### Python
 
 ```python
-AWS_AIOSESSION = AioSession(profile='dev')
-AWS_SESSION = Session(profile_name='dev')
+AWS_AIOSESSION = AioSession(profile="dev")
+AWS_SESSION = Session(profile_name="dev")
 ```
 
 ## Help :construction_worker:

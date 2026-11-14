@@ -1,48 +1,42 @@
 # Setup
 
+## Install
+
+```shell
+uv tool install awsssomanager
+# or
+pip install awsssomanager
+```
+
+## Development
+
 Clone the repo
 
 ```shell
 git clone git@github.com:brett-fitz/aws-sso-manager.git
+cd aws-sso-manager
 ```
 
-Install the aws-sso-manager package and CLI
+Install dependencies with [uv](https://docs.astral.sh/uv/) and [Task](https://taskfile.dev/)
 
-=== "General"
-
-    Install aws-sso-manager
-
-    ```shell
-    poetry install
-    ```
-
-=== "Select env python version"
-
-    Set python environment
-
-    ```shell
-    poetry env use 3.11
-    ```
-
-    Install aws-sso-manager
-
-    ```shell
-    poetry install
-    ```
+```shell
+task setup        # uv sync --all-groups --all-extras
+task check        # lint + format check + typecheck + tests
+```
 
 Run `aws-sso-manager`
 
 ```shell
-❯ poetry run aws-sso-manager 
+❯ uv run aws-sso-manager
 Usage: aws-sso-manager [OPTIONS] COMMAND [ARGS]...
 
-  Python CLI Core
+  Manage AWS credentials for every account and role you can reach.
 
 Options:
   -v, --verbose  Verbose logging
   -h, --help     Show this message and exit.
 
 Commands:
-  configure  Configure AWS SSO Manager
-  login      aws sso login
+  configure  Configure aws-sso-manager from CONFIG_FILE and log in.
+  login      Refresh credentials using the saved configuration.
 ```

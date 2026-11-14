@@ -1,4 +1,5 @@
-"""aws-sso-manager sso module: token"""
+"""aws-sso-manager sso module: token."""
+
 import logging
 import time
 
@@ -6,17 +7,14 @@ import boto3
 
 from awsssomanager.config.config import AWSSSOManagerConfig
 
-__all__ = [
-    "create_token",
-    "test_create_token"
-]
+
+__all__ = ["create_token", "test_create_token"]
 
 logger = logging.getLogger(__name__)
 
 
 def create_token(config: AWSSSOManagerConfig) -> AWSSSOManagerConfig:
-    """
-    Create an AWS SSO access token and update the configuration.
+    """Create an AWS SSO access token and update the configuration.
 
     Args:
         config (AWSSSOManagerConfig): The configuration parser containing SSO settings.
@@ -46,7 +44,7 @@ def test_create_token(config: AWSSSOManagerConfig) -> bool:
     """Attempt to create a SSO token.
 
     Args:
-        config (AWSSSOManagerConfig):
+        config (AWSSSOManagerConfig): Config holding the registered client and device code.
 
     Returns:
         bool: True if successful else False.

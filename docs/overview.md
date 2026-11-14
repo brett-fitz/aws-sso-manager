@@ -90,6 +90,6 @@ $ AWS_PROFILE=1234567890_AdministratorAccess aws s3 ls
 ### Python
 
 ```python
-AWS_AIOSESSION = AioSession(profile='dev')
-AWS_SESSION = Session(profile_name='dev')
+AWS_AIOSESSION = AioSession(profile="dev")
+AWS_SESSION = Session(profile_name="dev")
 ```
