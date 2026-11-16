@@ -43,6 +43,10 @@ the [GitHub releases](https://github.com/brett-fitz/aws-sso-manager/releases).
 
 ### Fixed
 
+- One unit test wrote fixture credentials into the real `~/.aws/credentials` (`secops`,
+  `496537994330`, `496537994330_Okta-ReadOnly-secops`, with `x_source = okta:example.okta.com`).
+  Every test now runs against a temporary `~/.aws`, and a guard test fails if any module still
+  points at the real one. If you ran the tests, delete those sections.
 - CI never ran for pull requests that only changed package code, because the path filter pointed
   at `aws-sso-manager/**` instead of `awsssomanager/**`.
 - The docs build walked the whole repository, including `.venv`, when generating API reference
