@@ -1,6 +1,6 @@
 [project]
 name = "awsssomanager"
-version = "0.4.0"
+version = "0.4.1"
 description = "Manage AWS credentials for every account and role you can reach through AWS SSO"
 authors = [{ name = "Brett Fitzpatrick", email = "brettfitz@protonmail.com" }]
 readme = "README.md"

@@ -8,6 +8,11 @@ the [GitHub releases](https://github.com/brett-fitz/aws-sso-manager/releases).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-16
+
+Supersedes 0.4.0, which was withdrawn from PyPI shortly after it was published. The changes
+are the same.
+
 ### Added
 
 - `provider` setting: `identity-center` (the default, and the existing behaviour) or `saml`.
