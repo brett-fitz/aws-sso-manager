@@ -82,7 +82,7 @@ def test_easy_profiles_priority_and_default(credentials_path: Path, mocker: Mock
     ]
     assert credentials["dev"]["x_role_name"] == "AdministratorAccess"
     assert credentials["default"]["x_role_name"] == "AdministratorAccess"
-    assert credentials["prod"]["x_source"] == "sso:corp"
+    assert credentials["prod"]["x_source"] == "identity-center:corp"
 
 
 def test_prunes_legacy_sections_no_longer_selected(

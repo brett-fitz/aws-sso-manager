@@ -19,7 +19,7 @@ _PATCH_TARGETS = {
     "awsssomanager.cli.cli": ("SSO_MANAGER_CONFIG_FILE",),
     "awsssomanager.credentials_file": ("CREDENTIALS_FILE",),
 }
-_BROWSER_PROFILE_MODULES = ("awsssomanager.constants", "awsssomanager.okta.browser")
+_BROWSER_PROFILE_MODULES = ("awsssomanager.constants", "awsssomanager.saml.browser")
 
 
 @pytest.fixture(autouse=True)

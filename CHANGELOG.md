@@ -10,10 +10,12 @@ the [GitHub releases](https://github.com/brett-fitz/aws-sso-manager/releases).
 
 ### Added
 
-- Okta provider (`provider: okta`) for Okta's AWS Account Federation app, which federates
-  over SAML straight into IAM roles (the setup saml2aws targets). One browser sign-in works with
-  any Okta MFA factor and gets credentials for every selected role from a single SAML
-  assertion. Install with `pip install 'awsssomanager[okta]'`.
+- `provider` setting: `identity-center` (the default, and the existing behaviour) or `saml`.
+- SAML provider (`provider: saml`) for any identity provider that federates into IAM roles
+  over SAML 2.0: Okta's AWS Account Federation app, Microsoft Entra ID, Google Workspace, ADFS,
+  Keycloak, and so on (the setup saml2aws targets). One browser sign-in works with any MFA
+  factor and gets credentials for every selected role from a single SAML assertion. Install with
+  `pip install 'awsssomanager[saml]'`.
 - `profiles` config block, for both providers. `include` and `exclude` rules use globs on the
   account (id or alias) and the role name. An include rule can set an explicit profile `name`.
   `easyProfiles: false` writes only the named profiles. Excluded roles are never requested.
@@ -25,7 +27,7 @@ the [GitHub releases](https://github.com/brett-fitz/aws-sso-manager/releases).
 
 - Credentials sections now carry `x_managed_by`, `x_source`, `x_account_id`,
   `x_account_name`, `x_role_name` and `x_security_token_expires` (plus `x_principal_arn` for
-  Okta). These replace the `aws_sso_*` keys.
+  SAML). These replace the `aws_sso_*` keys.
 - Profiles that aws-sso-manager wrote earlier but no longer selects are removed on the next
   login. Sections written by other tools are never touched. Nothing is removed if any role fails.
 - `~/.aws/credentials` is written atomically with `0600` permissions, and through a symlink

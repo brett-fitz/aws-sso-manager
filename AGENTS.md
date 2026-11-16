@@ -15,7 +15,7 @@ into `~/.aws/credentials` for every account and role a user can reach, with easy
 - ty for type checking
 - pytest for testing with pytest-cov for coverage
 - boto3 for AWS APIs, click for the CLI, yamale for config validation
-- Optional `okta` extra: Playwright (browser sign-in), httpx, defusedxml
+- Optional `saml` extra: Playwright (browser sign-in), httpx, defusedxml
 - mkdocs-material for docs (`docs/`, `mkdocs.yml`)
 
 ## Common Development Commands
@@ -65,14 +65,14 @@ awsssomanager/
 ├── config/
 │   ├── config.py        # AWSSSOManagerConfig: user config + generated device state + validate()
 │   └── schema.yml       # yamale schema (strict: unknown keys are errors)
-├── sso/                 # provider: sso (AWS IAM Identity Center)
+├── sso/                 # provider: identity-center (AWS IAM Identity Center, formerly AWS SSO)
 │   ├── device.py        # sso-oidc client registration + device authorization
 │   ├── token.py         # sso-oidc CreateToken
 │   ├── roles.py         # ListAccountRoles, GetRoleCredentials -> RoleCredentials
 │   └── credentials.py   # token -> discover -> select -> fetch -> write
-├── okta/                # provider: okta (Okta AWS Account Federation, SAML -> IAM roles)
+├── saml/                # provider: saml (any IdP's AWS app, SAML 2.0 -> IAM roles)
 │   ├── browser.py       # Playwright: capture SAMLResponse posted to signin.aws.amazon.com/saml
-│   ├── saml.py          # defusedxml parse of the assertion's Role / SessionDuration attributes
+│   ├── assertion.py     # defusedxml parse of the assertion's Role / SessionDuration attributes
 │   ├── accounts.py      # account aliases from the AWS SAML sign-in page (httpx, best effort)
 │   ├── sts.py           # AssumeRoleWithSAML per role, in parallel, from one assertion
 │   └── login.py         # sign in -> discover -> select -> assume -> write
@@ -83,8 +83,11 @@ tests/unit/              # pytest default (data/ holds fixture configs; factorie
 
 ### Providers and optional dependencies
 
-- `okta` needs the `okta` extra (playwright, httpx, defusedxml). `awsssomanager.okta` is
+- `saml` needs the `saml` extra (playwright, httpx, defusedxml). `awsssomanager.saml` is
   imported lazily by the CLI so SSO-only installs work without it — keep it that way.
+- Keep `saml/` IdP-agnostic: it only depends on what AWS defines (the SAMLResponse posted to
+  the AWS sign-in endpoint and the AWS `Role` / `SessionDuration` attributes). Okta, Entra ID,
+  and the rest appear only as examples in docs and messages.
 - Both providers reduce discovery to `Role` and fetching to `RoleCredentials`; selection,
   naming and writing live in `profiles.py` / `credentials_file.py` and are shared.
 - Selection runs before credentials are requested: excluded roles must never be assumed.

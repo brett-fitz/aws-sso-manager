@@ -4,27 +4,27 @@
 [![Issues](https://img.shields.io/github/issues/brett-fitz/aws-sso-manager?style=flat-square)](https://github.com/brett-fitz/aws-sso-manager/issues)
 
 A CLI that writes short-lived AWS credentials into `~/.aws/credentials` for every account and
-role you choose, from one sign-in. It works with two kinds of single sign-on:
+role you choose, from one sign-in. It supports both ways AWS accepts single sign-on:
 
-| Provider | Use it when | How it signs in |
+| `provider` | Use it when | How it signs in |
 |---|---|---|
-| `sso` (default) | Your org uses **AWS IAM Identity Center** (`<domain>.awsapps.com/start`) | Device authorization in your browser |
-| `okta` | Your org uses Okta's **AWS Account Federation** app (SAML straight into IAM roles, the setup saml2aws targets) | Okta sign-in in a browser, with any MFA |
+| `identity-center` (default) | Your org uses **AWS IAM Identity Center** (`<domain>.awsapps.com/start`) | Device authorization in your browser |
+| `saml` | Your identity provider (IdP) federates into **IAM roles over SAML**: Okta's AWS Account Federation app, Entra ID, Google Workspace, ADFS, Keycloak, and so on (the setup saml2aws targets) | IdP sign-in in a browser, with any MFA |
 
-With the `okta` provider, one Okta sign-in returns a SAML assertion listing every role you are
-assigned. aws-sso-manager exchanges that one assertion for credentials on each role you
-selected, so you no longer run a separate login per profile.
+With `saml`, one sign-in returns a SAML assertion listing every role you are assigned.
+aws-sso-manager exchanges that one assertion for credentials on each role you selected, so you
+no longer need a separate login per profile.
 
 ## Setup
 
 ```shell
 uv tool install awsssomanager          # IAM Identity Center only
-uv tool install 'awsssomanager[okta]'  # adds the Okta provider
-# or: pip install awsssomanager / pip install 'awsssomanager[okta]'
+uv tool install 'awsssomanager[saml]'  # adds the SAML provider
+# or: pip install awsssomanager / pip install 'awsssomanager[saml]'
 ```
 
-The Okta provider drives Google Chrome by default. To use Playwright's bundled Chromium
-instead, set `okta.browser: chromium` and run `playwright install chromium`.
+The SAML provider drives Google Chrome by default. To use Playwright's bundled Chromium
+instead, set `saml.browser: chromium` and run `playwright install chromium`.
 
 ### Config file: IAM Identity Center
 
@@ -41,12 +41,14 @@ role_priority:                 # lowest to highest; picks the role behind <accou
   - "AdministratorAccess"
 ```
 
-### Config file: Okta
+`provider` defaults to `identity-center`, so existing configs keep working unchanged.
+
+### Config file: SAML
 
 ```yaml
-provider: okta
-okta:
-  # The AWS Account Federation app's embed link (the `url` in ~/.saml2aws).
+provider: saml
+saml:
+  # The IdP-initiated sign-in link for your IdP's AWS app (Okta: the `url` in ~/.saml2aws).
   appUrl: 'https://example.okta.com/home/amazon_aws/0oaXXXXXXXXXXXXXXX/272'
   sessionDuration: 3600        # optional; capped by each role's max session duration
   browser: chrome              # optional: chrome | chrome-beta | msedge | chromium
@@ -66,6 +68,23 @@ profiles:
   exclude:
     - role: '*BreakGlass*'
 ```
+
+#### Finding `appUrl`
+
+Use the link your IdP opens when you click its AWS tile. If opening it in a browser lands you on
+AWS's "Select a role" page or the console, it will work. Typical shapes:
+
+| IdP | `appUrl` |
+|---|---|
+| Okta (AWS Account Federation) | `https://<org>.okta.com/home/amazon_aws/<app id>/272` |
+| Microsoft Entra ID | The app's *User access URL*: `https://launcher.myapps.microsoft.com/api/signin/<app id>?tenantId=<tenant id>` |
+| Google Workspace | `https://accounts.google.com/o/saml2/initsso?idpid=<idp id>&spid=<sp id>&forceauthn=false` |
+| ADFS | `https://<adfs host>/adfs/ls/IdpInitiatedSignOn.aspx?loginToRp=urn:amazon:webservices` |
+| Keycloak | `https://<host>/realms/<realm>/protocol/saml/clients/<client url name>` |
+
+Limits: the assertion must not be encrypted, and only the commercial AWS partition is
+supported (`signin.aws.amazon.com` and its regional endpoints). GovCloud and China sign-in
+endpoints are not yet supported.
 
 ### Choosing which roles get profiles
 
@@ -105,8 +124,8 @@ aws-sso-manager only rewrites the sections it owns in `~/.aws/credentials`, whic
 `x_managed_by = aws-sso-manager`. When a role stops being selected, its profile is removed on
 the next login. Sections written by other tools, such as saml2aws, are never touched.
 
-With Okta, the browser keeps a dedicated profile under `~/.aws/aws-sso-manager/browser/`. While
-your Okta session is alive, `login` usually completes without a prompt.
+With `saml`, the browser keeps a dedicated profile under `~/.aws/aws-sso-manager/browser/`.
+While your IdP session is alive, `login` usually completes without a prompt.
 
 ## Easy Profiles
 

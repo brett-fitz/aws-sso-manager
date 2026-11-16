@@ -1,4 +1,4 @@
-"""Okta login orchestration: sign-in -> select -> assume -> write."""
+"""SAML login orchestration: sign-in -> select -> assume -> write."""
 
 from pathlib import Path
 from typing import Any
@@ -12,7 +12,7 @@ import respx
 from awsssomanager.config import AWSSSOManagerConfig
 from awsssomanager.credentials_file import load_credentials
 from awsssomanager.models import Role
-from awsssomanager.okta.login import login
+from awsssomanager.saml.login import login
 from tests.unit.factories import (
     AWS_SAML_URL,
     DEV,
@@ -35,11 +35,11 @@ ALIASES_HTML = (
 )
 
 
-def okta_config(**profiles: Any) -> AWSSSOManagerConfig:
+def saml_config(**profiles: Any) -> AWSSSOManagerConfig:
     config = AWSSSOManagerConfig(
         {
-            "provider": "okta",
-            "okta": {"appUrl": "https://example.okta.com/home/amazon_aws/0oa1/272"},
+            "provider": "saml",
+            "saml": {"appUrl": "https://example.okta.com/home/amazon_aws/0oa1/272"},
             "profiles": profiles or None,
         }
     )
@@ -50,7 +50,7 @@ def okta_config(**profiles: Any) -> AWSSSOManagerConfig:
 @pytest.fixture
 def signed_in(mocker: MockerFixture) -> Any:
     mocker.patch(
-        "awsssomanager.okta.login.capture_saml_response",
+        "awsssomanager.saml.login.capture_saml_response",
         return_value=make_saml_response(ROLE_ARNS),
     )
     with respx.mock:
@@ -63,12 +63,12 @@ def assume(mocker: MockerFixture) -> Any:
     def fake(assertion: Any, roles: list[Role], **_: Any) -> dict:
         return {role: make_creds(str(i + 1)) for i, role in enumerate(roles)}
 
-    return mocker.patch("awsssomanager.okta.login.assume_roles", side_effect=fake)
+    return mocker.patch("awsssomanager.saml.login.assume_roles", side_effect=fake)
 
 
 @pytest.mark.usefixtures("signed_in")
 def test_assumes_only_selected_roles(credentials_path: Path, assume: Any) -> None:
-    config = okta_config(
+    config = saml_config(
         easyProfiles=False,
         include=[
             {"role": "Okta-ReadOnly-dev", "name": "dev"},
@@ -89,13 +89,13 @@ def test_assumes_only_selected_roles(credentials_path: Path, assume: Any) -> Non
     credentials = load_credentials(credentials_path)
     assert sorted(credentials.sections()) == ["dev", "developer", "prod"]
     assert credentials["prod"]["x_account_name"] == "prod"
-    assert credentials["dev"]["x_source"] == "okta:example.okta.com"
+    assert credentials["dev"]["x_source"] == "saml:example.okta.com"
 
 
 @pytest.mark.usefixtures("signed_in")
 def test_session_duration_from_config(assume: Any) -> None:
-    config = okta_config(include=[{"role": "Okta-ReadOnly-dev"}])
-    config.config["okta"]["sessionDuration"] = 7200
+    config = saml_config(include=[{"role": "Okta-ReadOnly-dev"}])
+    config.config["saml"]["sessionDuration"] = 7200
     login(config)
     assert assume.call_args.kwargs["duration"] == 7200
     assert assume.call_args.kwargs["region"] == "us-east-1"
@@ -105,7 +105,7 @@ def test_session_duration_from_config(assume: Any) -> None:
 def test_failure_keeps_previous_profiles(
     credentials_path: Path, assume: Any, mocker: MockerFixture
 ) -> None:
-    config = okta_config(
+    config = saml_config(
         easyProfiles=False,
         include=[
             {"role": "Okta-ReadOnly-dev", "name": "dev"},
@@ -130,6 +130,6 @@ def test_failure_keeps_previous_profiles(
 
 @pytest.mark.usefixtures("signed_in")
 def test_nothing_selected_writes_nothing(credentials_path: Path, assume: Any) -> None:
-    assert login(okta_config(include=[])) == {}
+    assert login(saml_config(include=[])) == {}
     assume.assert_not_called()
     assert not credentials_path.exists()

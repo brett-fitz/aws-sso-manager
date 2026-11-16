@@ -27,24 +27,24 @@ def test_create_aws_dir(aws_dir: Path) -> None:
 
 def test_legacy_sso_config_still_loads() -> None:
     config = AWSSSOManagerConfig.from_config(config_file=DATA / ".aws-sso-manager.yml")
-    assert config.provider == "sso"
+    assert config.provider == "identity-center"
     assert config.sso_domain == "test"
     assert config.login_account == "1234567890"
     assert config.region == "us-east-1"
-    assert config.credential_source == "sso:test"
+    assert config.credential_source == "identity-center:test"
     assert config.profile_selection.include is None
 
 
-def test_okta_config_loads() -> None:
-    config = AWSSSOManagerConfig.from_config(config_file=DATA / "okta.yml")
-    assert config.provider == "okta"
+def test_saml_config_loads() -> None:
+    config = AWSSSOManagerConfig.from_config(config_file=DATA / "saml.yml")
+    assert config.provider == "saml"
     assert config.region == "us-east-1"  # STS default
-    assert config.okta_browser == "chromium"
-    assert config.okta_session_duration == 3600
-    assert config.okta_timeout == 300
+    assert config.saml_browser == "chromium"
+    assert config.saml_session_duration == 3600
+    assert config.saml_timeout == 300
     assert config.login_account == "dev"
     assert config.role_priority == []
-    assert config.credential_source == "okta:example.okta.com"
+    assert config.credential_source == "saml:example.okta.com"
     selection = config.profile_selection
     assert selection.easy_profiles is False
     assert selection.include is not None
@@ -53,13 +53,13 @@ def test_okta_config_loads() -> None:
     )
 
 
-def test_okta_requires_app_url(tmp_path: Path) -> None:
-    with pytest.raises(ConfigError, match=r"okta\.appUrl"):
-        AWSSSOManagerConfig.from_config(write(tmp_path, "provider: okta\n"))
+def test_saml_requires_app_url(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match=r"saml\.appUrl"):
+        AWSSSOManagerConfig.from_config(write(tmp_path, "provider: saml\n"))
 
 
-def test_okta_app_url_must_be_https(tmp_path: Path) -> None:
-    path = write(tmp_path, "provider: okta\nokta:\n  appUrl: http://example.okta.com/app\n")
+def test_saml_app_url_must_be_https(tmp_path: Path) -> None:
+    path = write(tmp_path, "provider: saml\nsaml:\n  appUrl: http://example.okta.com/app\n")
     with pytest.raises(ConfigError, match="https"):
         AWSSSOManagerConfig.from_config(path)
 
@@ -89,7 +89,7 @@ def test_unquoted_login_account_is_coerced(tmp_path: Path) -> None:
 
 
 def test_write_config_is_user_only(saved_config_path: Path) -> None:
-    config = AWSSSOManagerConfig.from_config(DATA / "okta.yml")
+    config = AWSSSOManagerConfig.from_config(DATA / "saml.yml")
     config.write_config()
     assert stat.S_IMODE(saved_config_path.stat().st_mode) == 0o600
-    assert AWSSSOManagerConfig.from_config(saved_config_path).okta_app_url == config.okta_app_url
+    assert AWSSSOManagerConfig.from_config(saved_config_path).saml_app_url == config.saml_app_url

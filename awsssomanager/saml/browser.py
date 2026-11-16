@@ -1,9 +1,10 @@
-"""Capture an Okta SAMLResponse by driving a real browser through sign-in.
+"""Capture a SAMLResponse by driving a real browser through the identity provider's sign-in.
 
-A browser handles every Okta MFA factor (FastPass, push, WebAuthn) without this tool knowing
-about any of them. When Okta posts the assertion to AWS, the request is intercepted and
-aborted, so the assertion is captured but no AWS console session is opened. The browser profile
-is persistent and dedicated to this tool, so a live Okta session makes repeat logins zero-click.
+A browser handles every IdP and MFA factor (Okta FastPass, push, WebAuthn, ...) without this tool
+knowing about any of them. When the IdP posts the assertion to AWS, the request is intercepted
+and aborted, so the assertion is captured but no AWS console session is opened. The browser
+profile is persistent and dedicated to this tool, so a live IdP session makes repeat logins
+zero-click.
 """
 
 from contextlib import suppress
@@ -17,7 +18,7 @@ from playwright.sync_api import Request, Route, sync_playwright
 
 from awsssomanager.constants import BROWSER_PROFILE_DIR
 from awsssomanager.errors import AWSSSOManagerError
-from awsssomanager.okta.saml import AWS_SAML_ENDPOINT_RE
+from awsssomanager.saml.assertion import AWS_SAML_ENDPOINT_RE
 
 
 __all__ = [
@@ -36,7 +37,7 @@ _PROFILE_DIR_MODE = 0o700
 
 
 class BrowserLoginError(AWSSSOManagerError, RuntimeError):
-    """Okta sign-in did not produce a SAMLResponse (timeout, closed window, no browser)."""
+    """Sign-in did not produce a SAMLResponse (timeout, closed window, no browser)."""
 
 
 def extract_saml_response(post_data: str | None) -> str | None:
@@ -55,7 +56,7 @@ def extract_saml_response(post_data: str | None) -> str | None:
 
 
 def _prepare_profile_dir(path: Path) -> None:
-    # Holds Okta session cookies: user-only.
+    # Holds the IdP's session cookies: user-only.
     path.mkdir(mode=_PROFILE_DIR_MODE, parents=True, exist_ok=True)
     path.chmod(_PROFILE_DIR_MODE)
 
@@ -64,7 +65,7 @@ def _launch_hint(browser: str, error: Exception) -> str:
     hint = f"could not launch the '{browser}' browser ({error})."
     if browser != _BUNDLED_CHROMIUM:
         hint += (
-            " Install it, or set `okta.browser: chromium` and run `playwright install chromium`."
+            " Install it, or set `saml.browser: chromium` and run `playwright install chromium`."
         )
     else:
         hint += " Run `playwright install chromium`."
@@ -78,10 +79,10 @@ def capture_saml_response(
     timeout: int = 300,
     user_data_dir: Path | None = None,
 ) -> str:  # pragma: no cover - drives a real browser; verified manually
-    """Open the Okta AWS app and return the SAMLResponse it posts to AWS.
+    """Open the identity provider's AWS app and return the SAMLResponse it posts to AWS.
 
     Args:
-        app_url: Okta embed link for the AWS Account Federation app.
+        app_url: IdP-initiated sign-in link for the AWS app (for example, Okta's embed link).
         browser: Playwright channel (``chrome``, ``msedge``, ...) or ``chromium`` for the
             Playwright-bundled build.
         timeout: Seconds to wait for the user to finish signing in.
@@ -105,7 +106,7 @@ def capture_saml_response(
                 captured.append(saml_response)
         route.abort()
 
-    logger.info(f"Opening {browser} for Okta sign-in (waiting up to {timeout}s)...")
+    logger.info(f"Opening {browser} to sign in (waiting up to {timeout}s)...")
     with sync_playwright() as playwright:
         try:
             context = playwright.chromium.launch_persistent_context(
@@ -123,30 +124,28 @@ def capture_saml_response(
             try:
                 page.goto(app_url, wait_until="commit")
             except PlaywrightError as error:
-                # Okta redirects (and our abort of the final POST) can interrupt the initial
+                # IdP redirects (and our abort of the final POST) can interrupt the initial
                 # navigation; the wait below decides success.
                 logger.debug(f"initial navigation interrupted: {error}")
 
             deadline = time.monotonic() + timeout
             while not captured:
                 if time.monotonic() >= deadline:
-                    raise BrowserLoginError(f"timed out after {timeout}s waiting for Okta sign-in")
+                    raise BrowserLoginError(f"timed out after {timeout}s waiting for sign-in")
                 try:
                     pages = context.pages
                     if not pages:
-                        raise BrowserLoginError(
-                            "the browser was closed before Okta sign-in finished"
-                        )
+                        raise BrowserLoginError("the browser was closed before sign-in finished")
                     pages[0].wait_for_timeout(_POLL_MS)
                 except PlaywrightError as error:
                     if captured:
                         break
                     raise BrowserLoginError(
-                        "the browser was closed before Okta sign-in finished"
+                        "the browser was closed before sign-in finished"
                     ) from error
         finally:
             with suppress(PlaywrightError):
                 context.close()
 
-    logger.info("Captured SAML assertion from Okta")
+    logger.info("Captured SAML assertion")
     return captured[0]

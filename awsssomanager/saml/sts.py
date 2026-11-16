@@ -1,6 +1,6 @@
 """Exchange one SAML assertion for credentials on many roles.
 
-The assertion is short-lived (Okta typically allows about five minutes), so every selected role
+The assertion is short-lived (IdPs typically allow about five minutes), so every selected role
 is assumed in parallel straight after sign-in.
 """
 
@@ -15,7 +15,7 @@ from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
 from awsssomanager.models import Role, RoleCredentials
-from awsssomanager.okta.saml import SamlAssertion
+from awsssomanager.saml.assertion import SamlAssertion
 
 
 __all__ = ["DEFAULT_SESSION_DURATION", "assume_roles", "resolve_session_duration"]
@@ -30,11 +30,11 @@ _MAX_WORKERS = 10
 def resolve_session_duration(configured: int | None, assertion: SamlAssertion) -> int:
     """Pick the requested credential lifetime.
 
-    Precedence: ``okta.sessionDuration`` in the config, then the assertion's ``SessionDuration``
+    Precedence: ``saml.sessionDuration`` in the config, then the assertion's ``SessionDuration``
     attribute, then one hour.
 
     Args:
-        configured: ``okta.sessionDuration`` from the config, if set.
+        configured: ``saml.sessionDuration`` from the config, if set.
         assertion: The parsed SAMLResponse.
 
     Returns:

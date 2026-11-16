@@ -4,8 +4,8 @@ from urllib.parse import urlencode
 
 import pytest
 
-from awsssomanager.okta.browser import _launch_hint, extract_saml_response
-from awsssomanager.okta.saml import AWS_SAML_ENDPOINT_RE
+from awsssomanager.saml.assertion import AWS_SAML_ENDPOINT_RE
+from awsssomanager.saml.browser import _launch_hint, extract_saml_response
 
 
 def test_extracts_saml_response_from_form_body() -> None:
@@ -46,5 +46,5 @@ def test_acs_pattern_rejects_lookalikes(url: str) -> None:
 
 
 def test_launch_hint_suggests_bundled_chromium() -> None:
-    assert "okta.browser: chromium" in _launch_hint("chrome", RuntimeError("not found"))
-    assert "okta.browser" not in _launch_hint("chromium", RuntimeError("not found"))
+    assert "saml.browser: chromium" in _launch_hint("chrome", RuntimeError("not found"))
+    assert "saml.browser" not in _launch_hint("chromium", RuntimeError("not found"))

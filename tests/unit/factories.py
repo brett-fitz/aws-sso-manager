@@ -20,7 +20,7 @@ def provider_arn(account_id: str) -> str:
     return f"arn:aws:iam::{account_id}:saml-provider/Okta"
 
 
-def okta_role(account_id: str, name: str, account_name: str | None = None) -> Role:
+def saml_role(account_id: str, name: str, account_name: str | None = None) -> Role:
     return Role(
         account_id=account_id,
         role_name=name,

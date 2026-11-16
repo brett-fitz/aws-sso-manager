@@ -6,14 +6,14 @@ import textwrap
 
 import pytest
 
-from awsssomanager.okta.saml import SamlError, parse_saml_response
+from awsssomanager.saml.assertion import SamlError, parse_saml_response
 from tests.unit.factories import (
     DEV,
     PROD,
     make_saml_response,
-    okta_role,
     provider_arn,
     role_arn,
+    saml_role,
 )
 
 
@@ -27,8 +27,8 @@ def test_parses_roles_in_either_pair_order(role_first: bool) -> None:
         make_saml_response([READONLY_ARN, EDITOR_ARN], role_first=role_first)
     )
     assert assertion.roles == (
-        okta_role(DEV, "Okta-ReadOnly-dev"),
-        okta_role(PROD, "Okta-SecretsEditor-prod"),
+        saml_role(DEV, "Okta-ReadOnly-dev"),
+        saml_role(PROD, "Okta-SecretsEditor-prod"),
     )
     assert assertion.roles[0].principal_arn == provider_arn(DEV)
 

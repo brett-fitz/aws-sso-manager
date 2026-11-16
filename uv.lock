@@ -6,10 +6,10 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
-    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
+    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version < '3.11.5' and sys_platform == 'win32'",
     "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
@@ -31,7 +31,7 @@ wheels = [
 
 [[package]]
 name = "awsssomanager"
-version = "0.3.0"
+version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
@@ -42,7 +42,7 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-okta = [
+saml = [
     { name = "defusedxml" },
     { name = "httpx" },
     { name = "playwright" },
@@ -77,13 +77,13 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.44.3" },
     { name = "click", specifier = ">=8.5.1" },
     { name = "coloredlogs", specifier = ">=15.0.1" },
-    { name = "defusedxml", marker = "extra == 'okta'", specifier = ">=0.7.1" },
-    { name = "httpx", marker = "extra == 'okta'", specifier = ">=0.28.1" },
-    { name = "playwright", marker = "extra == 'okta'", specifier = ">=1.65.2" },
+    { name = "defusedxml", marker = "extra == 'saml'", specifier = ">=0.7.1" },
+    { name = "httpx", marker = "extra == 'saml'", specifier = ">=0.28.1" },
+    { name = "playwright", marker = "extra == 'saml'", specifier = ">=1.65.2" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "yamale", specifier = ">=6.1.0" },
 ]
-provides-extras = ["okta"]
+provides-extras = ["saml"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1407,10 +1407,10 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
-    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
+    "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 dependencies = [

@@ -17,7 +17,7 @@ AWS_DIR: Final = f"{Path.home()}/.aws/"
 CREDENTIALS_FILE: Final = f"{AWS_DIR}credentials"
 SSO_MANAGER_CONFIG_FILE: Final = f"{AWS_DIR}aws-sso-manager.yml"
 
-#: Dedicated browser profile for Okta sign-in; holds the Okta session cookie between logins.
+#: Dedicated browser profile for SAML sign-in; keeps the IdP session cookie between logins.
 BROWSER_PROFILE_DIR: Final = Path(AWS_DIR) / "aws-sso-manager" / "browser"
 
 #: STS region used for SAML federation when the config sets none.

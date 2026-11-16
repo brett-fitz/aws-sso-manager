@@ -15,18 +15,16 @@ from awsssomanager.profiles import (
     plan_profiles,
     select_roles,
 )
-from tests.unit.factories import DEV, LOGS, PROD, make_creds, okta_role
+from tests.unit.factories import DEV, LOGS, PROD, make_creds, saml_role
 
 
-READONLY = okta_role(DEV, "Okta-ReadOnly-dev", "dev")
-DEVELOPER = okta_role(DEV, "Okta-Developer-dev", "dev")
-DEV_BREAKGLASS = okta_role(DEV, "Okta-BreakGlass-dev", "dev")
-PROD_EDITOR = okta_role(PROD, "Okta-SecretsEditor-prod", "prod")
-PROD_BREAKGLASS = okta_role(PROD, "Okta-BreakGlass-prod", "prod")
-LOGS_READONLY = okta_role(LOGS, "Okta-ReadOnly-logs", "logs")
-LOGS_MANAGER = okta_role(
-    LOGS, "Okta-DataManager-logs", "logs"
-)
+READONLY = saml_role(DEV, "Okta-ReadOnly-dev", "dev")
+DEVELOPER = saml_role(DEV, "Okta-Developer-dev", "dev")
+DEV_BREAKGLASS = saml_role(DEV, "Okta-BreakGlass-dev", "dev")
+PROD_EDITOR = saml_role(PROD, "Okta-SecretsEditor-prod", "prod")
+PROD_BREAKGLASS = saml_role(PROD, "Okta-BreakGlass-prod", "prod")
+LOGS_READONLY = saml_role(LOGS, "Okta-ReadOnly-logs", "logs")
+LOGS_MANAGER = saml_role(LOGS, "Okta-DataManager-logs", "logs")
 
 ALL_ROLES = [
     READONLY,
@@ -175,7 +173,7 @@ class TestPlanProfiles:
         assert unranked[DEV] == DEVELOPER
 
     def test_no_alias_profile_without_account_name(self) -> None:
-        bare = okta_role(DEV, "Okta-ReadOnly-dev")
+        bare = saml_role(DEV, "Okta-ReadOnly-dev")
         assert set(plan_profiles([SelectedRole(bare)])) == {
             f"{DEV}_Okta-ReadOnly-dev",
             DEV,
@@ -213,7 +211,7 @@ class TestPlanProfiles:
 class TestBuildProfiles:
     def test_renders_sections_with_metadata(self) -> None:
         creds = make_creds("2", principal_arn="arn:aws:sts::1:assumed-role/x/y")
-        sections = build_profiles({"dev": READONLY}, {READONLY: creds}, source="okta:example")
+        sections = build_profiles({"dev": READONLY}, {READONLY: creds}, source="saml:example")
         assert sections == {
             "dev": {
                 "aws_access_key_id": creds.access_key_id,
@@ -225,7 +223,7 @@ class TestBuildProfiles:
                 "x_account_name": "dev",
                 "x_role_name": "Okta-ReadOnly-dev",
                 "x_managed_by": MANAGED_BY,
-                "x_source": "okta:example",
+                "x_source": "saml:example",
             }
         }
 
