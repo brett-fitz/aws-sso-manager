@@ -4,8 +4,8 @@
 
 ```shell
 uv tool install awsssomanager          # IAM Identity Center
-uv tool install 'awsssomanager[okta]'  # adds the Okta SAML provider
-# or: pip install awsssomanager / pip install 'awsssomanager[okta]'
+uv tool install 'awsssomanager[saml]'  # adds the SAML provider (Okta, Entra ID, Google, ...)
+# or: pip install awsssomanager / pip install 'awsssomanager[saml]'
 ```
 
 ## Development

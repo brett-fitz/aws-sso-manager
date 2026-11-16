@@ -1,4 +1,4 @@
-"""Okta SAML login: one browser sign-in, then every selected role from the same assertion."""
+"""SAML login: one browser sign-in, then every selected role from the same assertion."""
 
 from dataclasses import replace
 import logging
@@ -6,11 +6,11 @@ import logging
 from awsssomanager.config import AWSSSOManagerConfig
 from awsssomanager.credentials_file import write_profiles
 from awsssomanager.models import Role, RoleCredentials
-from awsssomanager.okta.accounts import fetch_account_aliases
-from awsssomanager.okta.browser import capture_saml_response
-from awsssomanager.okta.saml import SamlAssertion, parse_saml_response
-from awsssomanager.okta.sts import assume_roles, resolve_session_duration
 from awsssomanager.profiles import build_profiles, plan_profiles, select_roles
+from awsssomanager.saml.accounts import fetch_account_aliases
+from awsssomanager.saml.assertion import SamlAssertion, parse_saml_response
+from awsssomanager.saml.browser import capture_saml_response
+from awsssomanager.saml.sts import assume_roles, resolve_session_duration
 
 
 __all__ = ["discover_roles", "login"]
@@ -19,22 +19,22 @@ logger = logging.getLogger(__name__)
 
 
 def discover_roles(config: AWSSSOManagerConfig) -> tuple[SamlAssertion, list[Role]]:
-    """Sign in to Okta and list every role the assertion grants, with account aliases.
+    """Sign in to the IdP and list every role the assertion grants, with account aliases.
 
     Args:
-        config: An okta-provider config.
+        config: A saml-provider config.
 
     Returns:
         The assertion (still valid for a few minutes) and its roles.
     """
     saml_response = capture_saml_response(
-        config.okta_app_url, browser=config.okta_browser, timeout=config.okta_timeout
+        config.saml_app_url, browser=config.saml_browser, timeout=config.saml_timeout
     )
     assertion = parse_saml_response(saml_response)
     aliases = fetch_account_aliases(assertion)
     roles = [replace(role, account_name=aliases.get(role.account_id)) for role in assertion.roles]
     accounts = {role.account_id for role in roles}
-    logger.info(f"Okta granted {len(roles)} role(s) across {len(accounts)} account(s)")
+    logger.info(f"SAML assertion grants {len(roles)} role(s) across {len(accounts)} account(s)")
     return assertion, roles
 
 
@@ -45,7 +45,7 @@ def login(config: AWSSSOManagerConfig) -> dict[Role, Exception]:
     the previous run survive.
 
     Args:
-        config: An okta-provider config.
+        config: A saml-provider config.
 
     Returns:
         Roles that could not be assumed, with the error for each (empty on full success).
@@ -62,7 +62,7 @@ def login(config: AWSSSOManagerConfig) -> dict[Role, Exception]:
         assertion,
         [item.role for item in selected],
         region=config.region,
-        duration=resolve_session_duration(config.okta_session_duration, assertion),
+        duration=resolve_session_duration(config.saml_session_duration, assertion),
     )
     credentials = {role: r for role, r in results.items() if isinstance(r, RoleCredentials)}
     failures = {role: r for role, r in results.items() if isinstance(r, Exception)}

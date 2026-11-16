@@ -1,6 +1,6 @@
 [project]
 name = "awsssomanager"
-version = "0.3.0"
+version = "0.4.0"
 description = "Manage AWS credentials for every account and role you can reach through AWS SSO"
 authors = [{ name = "Brett Fitzpatrick", email = "brettfitz@protonmail.com" }]
 readme = "README.md"
@@ -39,7 +39,7 @@ Issues = "https://github.com/brett-fitz/aws-sso-manager/issues"
 Changelog = "https://github.com/brett-fitz/aws-sso-manager/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-okta = [
+saml = [
     "defusedxml>=0.7.1",
     "httpx>=0.28.1",
     "playwright>=1.65.2",

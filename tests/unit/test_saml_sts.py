@@ -12,8 +12,8 @@ from botocore.stub import Stubber
 import pytest
 
 from awsssomanager.models import RoleCredentials
-from awsssomanager.okta.saml import SamlAssertion, parse_saml_response
-from awsssomanager.okta.sts import DEFAULT_SESSION_DURATION, assume_roles, resolve_session_duration
+from awsssomanager.saml.assertion import SamlAssertion, parse_saml_response
+from awsssomanager.saml.sts import DEFAULT_SESSION_DURATION, assume_roles, resolve_session_duration
 from tests.unit.factories import FORENSICS, SECOPS, make_saml_response, role_arn
 
 

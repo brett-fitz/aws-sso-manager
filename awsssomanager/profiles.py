@@ -289,8 +289,8 @@ def build_profiles(
     Args:
         plan: Output of :func:`plan_profiles`.
         credentials: Credentials per role.
-        source: Identifies the provider instance (``sso:<domain>`` or ``okta:<host>``), so a
-            later run only prunes sections it wrote itself.
+        source: Identifies the provider instance (``identity-center:<domain>`` or
+            ``saml:<host>``), so a later run only prunes sections it wrote itself.
 
     Returns:
         Section name to key/value pairs.

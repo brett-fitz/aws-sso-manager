@@ -1,6 +1,7 @@
-"""Parse the AWS roles out of an Okta SAMLResponse.
+"""Parse the AWS roles out of a SAMLResponse.
 
-Okta's AWS Account Federation app puts every role the user may assume into one assertion, as
+An identity provider's AWS app (Okta's AWS Account Federation, Entra ID, Google Workspace, ...)
+puts every role the user may assume into one assertion, as
 ``https://aws.amazon.com/SAML/Attributes/Role`` values of the form
 ``<saml-provider ARN>,<role ARN>`` (in either order). That single assertion can be exchanged
 with ``sts:AssumeRoleWithSAML`` once per role while it is valid, which is what lets one browser
@@ -31,7 +32,7 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-#: Global AWS sign-in SAML endpoint (the ACS URL of Okta's AWS app).
+#: Global AWS sign-in SAML endpoint (the ACS URL that every IdP's AWS app posts to).
 AWS_SAML_ENDPOINT = "https://signin.aws.amazon.com/saml"
 
 #: Matches the global endpoint and the regional ones (``https://<region>.signin.aws...``).
@@ -57,9 +58,9 @@ class SamlAssertion:
     """What aws-sso-manager needs from one SAMLResponse.
 
     Attributes:
-        raw: The base64 SAMLResponse exactly as Okta posted it (passed to STS unchanged).
+        raw: The base64 SAMLResponse exactly as the IdP posted it (passed to STS unchanged).
         roles: Every role the assertion grants, in assertion order, de-duplicated.
-        session_duration: The ``SessionDuration`` attribute, if Okta sends one.
+        session_duration: The ``SessionDuration`` attribute, if the IdP sends one.
         destination: The ``Destination`` the response was addressed to, if present.
     """
 
@@ -128,8 +129,8 @@ def parse_saml_response(saml_response: str) -> SamlAssertion:
 
     if not roles:
         raise SamlError(
-            "the SAML assertion grants no AWS roles; check that okta.appUrl points at the "
-            "AWS Account Federation app and that you are assigned roles in it"
+            "the SAML assertion grants no AWS roles; check that saml.appUrl points at your "
+            "identity provider's AWS app and that you are assigned roles in it"
         )
 
     return SamlAssertion(

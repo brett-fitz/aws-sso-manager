@@ -13,7 +13,7 @@ import re
 
 import httpx
 
-from awsssomanager.okta.saml import AWS_SAML_ENDPOINT, AWS_SAML_ENDPOINT_RE, SamlAssertion
+from awsssomanager.saml.assertion import AWS_SAML_ENDPOINT, AWS_SAML_ENDPOINT_RE, SamlAssertion
 
 
 __all__ = ["fetch_account_aliases", "parse_account_aliases"]

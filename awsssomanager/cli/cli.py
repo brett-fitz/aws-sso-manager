@@ -11,7 +11,7 @@ import click
 import coloredlogs
 from yamale import YamaleError
 
-from awsssomanager.config import PROVIDER_OKTA, AWSSSOManagerConfig
+from awsssomanager.config import PROVIDER_SAML, AWSSSOManagerConfig
 from awsssomanager.constants import SSO_MANAGER_CONFIG_FILE
 from awsssomanager.errors import AWSSSOManagerError
 from awsssomanager.models import Role
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 P = ParamSpec("P")
 R = TypeVar("R")
 
-_OKTA_EXTRA_HINT = "provider okta needs the okta extra: pip install 'awsssomanager[okta]'"
+_SAML_EXTRA_HINT = "provider saml needs the saml extra: pip install 'awsssomanager[saml]'"
 
 
 def _friendly_errors(command: Callable[P, R]) -> Callable[P, R]:
@@ -44,13 +44,13 @@ def _friendly_errors(command: Callable[P, R]) -> Callable[P, R]:
     return wrapper
 
 
-def _okta() -> ModuleType:
-    # Imported lazily so SSO-only installs work without the okta extra.
+def _saml() -> ModuleType:
+    # Imported lazily so Identity Center-only installs work without the saml extra.
     try:
-        from awsssomanager import okta
+        from awsssomanager import saml
     except ImportError as error:
-        raise click.ClickException(_OKTA_EXTRA_HINT) from error
-    return okta
+        raise click.ClickException(_SAML_EXTRA_HINT) from error
+    return saml
 
 
 def _load_saved_config() -> AWSSSOManagerConfig:
@@ -88,7 +88,7 @@ def configure(config_file: str, reset: bool) -> None:
 
     # validate, then save the config before signing in so a failed login can be retried
     config = AWSSSOManagerConfig.from_config(config_file=config_file)
-    if config.provider == PROVIDER_OKTA:
+    if config.provider == PROVIDER_SAML:
         config.write_config()
     _login(config)
 
@@ -105,8 +105,8 @@ def login() -> None:
 def roles() -> None:
     """List every available role and the profiles it would get. Writes no credentials."""
     config = _load_saved_config()
-    if config.provider == PROVIDER_OKTA:
-        _, discovered = _okta().discover_roles(config)
+    if config.provider == PROVIDER_SAML:
+        _, discovered = _saml().discover_roles(config)
     else:
         config = authorize_device(config)
         config.write_config()
@@ -124,8 +124,8 @@ def roles() -> None:
 
 
 def _login(config: AWSSSOManagerConfig) -> None:
-    if config.provider == PROVIDER_OKTA:
-        failures = _okta().login(config)
+    if config.provider == PROVIDER_SAML:
+        failures = _saml().login(config)
         if failures:
             raise click.ClickException(f"{len(failures)} role(s) could not be assumed")
         return

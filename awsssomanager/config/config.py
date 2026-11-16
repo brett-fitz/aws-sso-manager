@@ -20,14 +20,14 @@ from awsssomanager.utils import is_valid_dir, is_valid_file
 from awsssomanager.utils.validators import validate_yaml
 
 
-__all__ = ["PROVIDER_OKTA", "PROVIDER_SSO", "AWSSSOManagerConfig", "ConfigError"]
+__all__ = ["PROVIDER_SAML", "PROVIDER_IDENTITY_CENTER", "AWSSSOManagerConfig", "ConfigError"]
 
 logger = logging.getLogger(__name__)
 
-PROVIDER_SSO = "sso"
-PROVIDER_OKTA = "okta"
-DEFAULT_OKTA_BROWSER = "chrome"
-DEFAULT_OKTA_TIMEOUT = 300
+PROVIDER_IDENTITY_CENTER = "identity-center"
+PROVIDER_SAML = "saml"
+DEFAULT_SAML_BROWSER = "chrome"
+DEFAULT_SAML_TIMEOUT = 300
 
 
 class ConfigError(AWSSSOManagerError, ValueError):
@@ -109,18 +109,18 @@ class AWSSSOManagerConfig:
 
     @property
     def provider(self) -> str:
-        """``sso`` (IAM Identity Center, the default) or ``okta`` (Okta SAML federation)."""
-        return self.config.get("provider") or PROVIDER_SSO
+        """``identity-center`` (AWS IAM Identity Center, the default) or ``saml`` (federation)."""
+        return self.config.get("provider") or PROVIDER_IDENTITY_CENTER
 
     @property
     def region(self) -> str:
-        """Identity Center region (sso) or STS region (okta, default us-east-1)."""
+        """Identity Center region (identity-center) or STS region (saml, default us-east-1)."""
         region = self.config.get("region")
         if region:
             return region
-        if self.provider == PROVIDER_OKTA:
+        if self.provider == PROVIDER_SAML:
             return DEFAULT_STS_REGION
-        raise ConfigError("'region' is required when provider is sso")
+        raise ConfigError("'region' is required when provider is identity-center")
 
     @property
     def role_priority(self) -> list[str]:
@@ -128,28 +128,28 @@ class AWSSSOManagerConfig:
         return list(self.config.get("role_priority") or [])
 
     @property
-    def _okta(self) -> dict:
-        return self.config.get("okta") or {}
+    def _saml(self) -> dict:
+        return self.config.get("saml") or {}
 
     @property
-    def okta_app_url(self) -> str:
-        """Okta embed link for the AWS Account Federation app."""
-        return self._okta["appUrl"]
+    def saml_app_url(self) -> str:
+        """IdP-initiated sign-in link for the IdP's AWS app (for example, Okta's embed link)."""
+        return self._saml["appUrl"]
 
     @property
-    def okta_session_duration(self) -> int | None:
+    def saml_session_duration(self) -> int | None:
         """Requested credential lifetime in seconds, if configured."""
-        return self._okta.get("sessionDuration")
+        return self._saml.get("sessionDuration")
 
     @property
-    def okta_browser(self) -> str:
-        """Playwright browser channel used for Okta sign-in."""
-        return self._okta.get("browser") or DEFAULT_OKTA_BROWSER
+    def saml_browser(self) -> str:
+        """Playwright browser channel used for the SAML sign-in."""
+        return self._saml.get("browser") or DEFAULT_SAML_BROWSER
 
     @property
-    def okta_timeout(self) -> int:
-        """Seconds allowed to finish the Okta sign-in."""
-        return self._okta.get("timeout") or DEFAULT_OKTA_TIMEOUT
+    def saml_timeout(self) -> int:
+        """Seconds allowed to finish signing in to the identity provider."""
+        return self._saml.get("timeout") or DEFAULT_SAML_TIMEOUT
 
     @property
     def profile_selection(self) -> ProfileSelection:
@@ -159,9 +159,9 @@ class AWSSSOManagerConfig:
     @property
     def credential_source(self) -> str:
         """Identity recorded in ``x_source`` on every credentials section this config writes."""
-        if self.provider == PROVIDER_OKTA:
-            return f"okta:{urlparse(self.okta_app_url).hostname}"
-        return f"sso:{self.sso_domain}"
+        if self.provider == PROVIDER_SAML:
+            return f"saml:{urlparse(self.saml_app_url).hostname}"
+        return f"identity-center:{self.sso_domain}"
 
     def validate(self) -> None:
         """Check the provider-specific rules the yamale schema cannot express.
@@ -169,16 +169,16 @@ class AWSSSOManagerConfig:
         Raises:
             ConfigError: If a field the provider needs is missing or invalid.
         """
-        if self.provider == PROVIDER_SSO:
+        if self.provider == PROVIDER_IDENTITY_CENTER:
             missing = [key for key in ("ssoDomain", "region") if not self.config.get(key)]
             if missing:
-                raise ConfigError(f"provider sso requires: {', '.join(missing)}")
+                raise ConfigError(f"provider identity-center requires: {', '.join(missing)}")
         else:
-            if not self._okta.get("appUrl"):
-                raise ConfigError("provider okta requires okta.appUrl")
-            parsed = urlparse(self.okta_app_url)
+            if not self._saml.get("appUrl"):
+                raise ConfigError("provider saml requires saml.appUrl")
+            parsed = urlparse(self.saml_app_url)
             if parsed.scheme != "https" or not parsed.hostname:
-                raise ConfigError(f"okta.appUrl must be an https URL, got: {self.okta_app_url}")
+                raise ConfigError(f"saml.appUrl must be an https URL, got: {self.saml_app_url}")
         try:
             self.profile_selection  # noqa: B018  # parse to surface rule errors early
         except ProfileSelectionError as error:

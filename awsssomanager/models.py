@@ -1,6 +1,6 @@
 """Provider-neutral role and credential types.
 
-Both credential providers (IAM Identity Center and Okta SAML federation) reduce what they
+Both credential providers (IAM Identity Center and SAML federation) reduce what they
 discover to :class:`Role` and what they fetch to :class:`RoleCredentials`, so profile selection,
 naming, and the credentials-file writer never need to know which provider ran.
 """

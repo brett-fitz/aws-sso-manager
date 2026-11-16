@@ -7,7 +7,7 @@ from awsssomanager.credentials_file import load_credentials, write_profiles
 from awsssomanager.profiles import MANAGED_BY
 
 
-SOURCE = "okta:example.okta.com"
+SOURCE = "saml:example.okta.com"
 
 SAML2AWS_SECTION = """[saml2aws-profile]
 aws_access_key_id = ASIAOTHERTOOL0000
@@ -55,7 +55,9 @@ def test_prunes_stale_sections_from_same_source(credentials_path: Path) -> None:
 
 
 def test_never_prunes_another_source(credentials_path: Path) -> None:
-    write_profiles({"sso-profile": owned(source="sso:corp")}, source="sso:corp")
+    write_profiles(
+        {"sso-profile": owned(source="identity-center:corp")}, source="identity-center:corp"
+    )
     write_profiles({"secops": owned()}, source=SOURCE)
     assert sorted(load_credentials(credentials_path).sections()) == ["secops", "sso-profile"]
 
@@ -83,7 +85,9 @@ def test_legacy_sso_sections_adopted_only_when_asked(credentials_path: Path) -> 
     write_profiles({"secops": owned()}, source=SOURCE)
     assert "old" in load_credentials(credentials_path).sections()
 
-    pruned = write_profiles({"secops": owned()}, source="sso:corp", adopt_legacy_sso=True)
+    pruned = write_profiles(
+        {"secops": owned()}, source="identity-center:corp", adopt_legacy_sso=True
+    )
     assert pruned == ["old"]
 
 

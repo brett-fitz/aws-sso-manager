@@ -5,8 +5,8 @@ from urllib.parse import parse_qs
 import httpx
 import respx
 
-from awsssomanager.okta.accounts import fetch_account_aliases, parse_account_aliases
-from awsssomanager.okta.saml import parse_saml_response
+from awsssomanager.saml.accounts import fetch_account_aliases, parse_account_aliases
+from awsssomanager.saml.assertion import parse_saml_response
 from tests.unit.factories import AWS_SAML_URL, FORENSICS, SECOPS, make_saml_response, role_arn
 
 

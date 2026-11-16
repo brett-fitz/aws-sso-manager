@@ -11,25 +11,25 @@ from pytest_mock import MockerFixture
 
 import awsssomanager
 from awsssomanager.cli.cli import cli
-from tests.unit.factories import FORENSICS, SECOPS, okta_role
+from tests.unit.factories import FORENSICS, SECOPS, saml_role
 
 
 DATA = Path(__file__).parent / "data"
-READONLY = okta_role(SECOPS, "Okta-ReadOnly-secops", "secops")
-BREAKGLASS = okta_role(SECOPS, "Okta-BreakGlass-secops", "secops")
-EDITOR = okta_role(FORENSICS, "Okta-SecretsValueEditor-forensics", "forensics")
+READONLY = saml_role(SECOPS, "Okta-ReadOnly-secops", "secops")
+BREAKGLASS = saml_role(SECOPS, "Okta-BreakGlass-secops", "secops")
+EDITOR = saml_role(FORENSICS, "Okta-SecretsValueEditor-forensics", "forensics")
 
 
 @pytest.fixture
-def okta_saved(saved_config_path: Path) -> Path:
-    shutil.copy(DATA / "okta.yml", saved_config_path)
+def saml_saved(saved_config_path: Path) -> Path:
+    shutil.copy(DATA / "saml.yml", saved_config_path)
     return saved_config_path
 
 
-@pytest.mark.usefixtures("okta_saved")
+@pytest.mark.usefixtures("saml_saved")
 def test_roles_lists_selection_and_profile_names(mocker: MockerFixture) -> None:
     mocker.patch(
-        "awsssomanager.okta.discover_roles",
+        "awsssomanager.saml.discover_roles",
         return_value=(object(), [READONLY, BREAKGLASS, EDITOR]),
     )
 
@@ -46,10 +46,10 @@ def test_roles_lists_selection_and_profile_names(mocker: MockerFixture) -> None:
     assert "2 of 3 role(s) selected" in result.output
 
 
-@pytest.mark.usefixtures("okta_saved")
+@pytest.mark.usefixtures("saml_saved")
 def test_login_exits_non_zero_when_roles_fail(mocker: MockerFixture) -> None:
     denied = ClientError({"Error": {"Code": "AccessDenied", "Message": "no"}}, "AssumeRoleWithSAML")
-    mocker.patch("awsssomanager.okta.login", return_value={READONLY: denied})
+    mocker.patch("awsssomanager.saml.login", return_value={READONLY: denied})
 
     result = CliRunner().invoke(cli, ["login"])
 
@@ -66,29 +66,29 @@ def test_login_without_config_explains() -> None:
 
 def test_configure_reports_config_errors_without_traceback(tmp_path: Path, aws_dir: Path) -> None:
     bad = tmp_path / "bad.yml"
-    bad.write_text("provider: okta\n")
+    bad.write_text("provider: saml\n")
     result = CliRunner().invoke(cli, ["configure", str(bad)])
     assert result.exit_code == 1
-    assert "okta.appUrl" in result.output
+    assert "saml.appUrl" in result.output
     assert "Traceback" not in result.output
 
 
-def test_configure_okta_saves_config_then_logs_in(
+def test_configure_saml_saves_config_then_logs_in(
     saved_config_path: Path, mocker: MockerFixture
 ) -> None:
-    login = mocker.patch("awsssomanager.okta.login", return_value={})
-    result = CliRunner().invoke(cli, ["configure", str(DATA / "okta.yml")])
+    login = mocker.patch("awsssomanager.saml.login", return_value={})
+    result = CliRunner().invoke(cli, ["configure", str(DATA / "saml.yml")])
     assert result.exit_code == 0, result.output
     assert saved_config_path.exists()
     login.assert_called_once()
 
 
-@pytest.mark.usefixtures("okta_saved")
-def test_missing_okta_extra_is_explained(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delattr(awsssomanager, "okta", raising=False)
-    monkeypatch.setitem(sys.modules, "awsssomanager.okta", None)
+@pytest.mark.usefixtures("saml_saved")
+def test_missing_saml_extra_is_explained(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delattr(awsssomanager, "saml", raising=False)
+    monkeypatch.setitem(sys.modules, "awsssomanager.saml", None)
 
     result = CliRunner().invoke(cli, ["login"])
 
     assert result.exit_code == 1
-    assert "awsssomanager[okta]" in result.output
+    assert "awsssomanager[saml]" in result.output

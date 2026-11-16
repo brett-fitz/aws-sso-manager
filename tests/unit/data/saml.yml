@@ -1,5 +1,5 @@
-provider: okta
-okta:
+provider: saml
+saml:
   appUrl: 'https://example.okta.com/home/amazon_aws/0oaEXAMPLE/272'
   sessionDuration: 3600
   browser: chromium

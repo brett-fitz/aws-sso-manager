@@ -15,16 +15,16 @@ from awsssomanager.profiles import (
     plan_profiles,
     select_roles,
 )
-from tests.unit.factories import FORENSICS, SECLOG, SECOPS, make_creds, okta_role
+from tests.unit.factories import FORENSICS, SECLOG, SECOPS, make_creds, saml_role
 
 
-READONLY = okta_role(SECOPS, "Okta-ReadOnly-secops", "secops")
-TIAGENT = okta_role(SECOPS, "Okta-TIAgentDeveloper-secops", "secops")
-SECOPS_BREAKGLASS = okta_role(SECOPS, "Okta-BreakGlass-secops", "secops")
-FORENSICS_EDITOR = okta_role(FORENSICS, "Okta-SecretsValueEditor-forensics", "forensics")
-FORENSICS_BREAKGLASS = okta_role(FORENSICS, "Okta-BreakGlass-forensics", "forensics")
-SECLOG_READONLY = okta_role(SECLOG, "Okta-ReadOnly-seclog-pipeline", "seclog-pipeline")
-SECLOG_MANAGER = okta_role(
+READONLY = saml_role(SECOPS, "Okta-ReadOnly-secops", "secops")
+TIAGENT = saml_role(SECOPS, "Okta-TIAgentDeveloper-secops", "secops")
+SECOPS_BREAKGLASS = saml_role(SECOPS, "Okta-BreakGlass-secops", "secops")
+FORENSICS_EDITOR = saml_role(FORENSICS, "Okta-SecretsValueEditor-forensics", "forensics")
+FORENSICS_BREAKGLASS = saml_role(FORENSICS, "Okta-BreakGlass-forensics", "forensics")
+SECLOG_READONLY = saml_role(SECLOG, "Okta-ReadOnly-seclog-pipeline", "seclog-pipeline")
+SECLOG_MANAGER = saml_role(
     SECLOG, "Okta-SecurityDatalakeManager-seclog-pipeline", "seclog-pipeline"
 )
 
@@ -175,7 +175,7 @@ class TestPlanProfiles:
         assert unranked[SECOPS] == TIAGENT
 
     def test_no_alias_profile_without_account_name(self) -> None:
-        bare = okta_role(SECOPS, "Okta-ReadOnly-secops")
+        bare = saml_role(SECOPS, "Okta-ReadOnly-secops")
         assert set(plan_profiles([SelectedRole(bare)])) == {
             f"{SECOPS}_Okta-ReadOnly-secops",
             SECOPS,
@@ -215,7 +215,7 @@ class TestPlanProfiles:
 class TestBuildProfiles:
     def test_renders_sections_with_metadata(self) -> None:
         creds = make_creds("2", principal_arn="arn:aws:sts::1:assumed-role/x/y")
-        sections = build_profiles({"secops": READONLY}, {READONLY: creds}, source="okta:example")
+        sections = build_profiles({"secops": READONLY}, {READONLY: creds}, source="saml:example")
         assert sections == {
             "secops": {
                 "aws_access_key_id": creds.access_key_id,
@@ -227,7 +227,7 @@ class TestBuildProfiles:
                 "x_account_name": "secops",
                 "x_role_name": "Okta-ReadOnly-secops",
                 "x_managed_by": MANAGED_BY,
-                "x_source": "okta:example",
+                "x_source": "saml:example",
             }
         }
 
