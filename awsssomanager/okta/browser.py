@@ -76,7 +76,7 @@ def capture_saml_response(
     *,
     browser: str = DEFAULT_BROWSER,
     timeout: int = 300,
-    user_data_dir: Path = BROWSER_PROFILE_DIR,
+    user_data_dir: Path | None = None,
 ) -> str:  # pragma: no cover - drives a real browser; verified manually
     """Open the Okta AWS app and return the SAMLResponse it posts to AWS.
 
@@ -85,7 +85,8 @@ def capture_saml_response(
         browser: Playwright channel (``chrome``, ``msedge``, ...) or ``chromium`` for the
             Playwright-bundled build.
         timeout: Seconds to wait for the user to finish signing in.
-        user_data_dir: Persistent browser profile directory.
+        user_data_dir: Persistent browser profile directory. Defaults to
+            ``~/.aws/aws-sso-manager/browser`` (resolved at call time).
 
     Returns:
         The base64 SAMLResponse.
@@ -93,6 +94,7 @@ def capture_saml_response(
     Raises:
         BrowserLoginError: If the browser cannot start, is closed, or sign-in times out.
     """
+    user_data_dir = user_data_dir or BROWSER_PROFILE_DIR
     _prepare_profile_dir(user_data_dir)
     captured: list[str] = []
 
