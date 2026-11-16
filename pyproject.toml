@@ -5,7 +5,7 @@ description = "Manage AWS credentials for every account and role you can reach t
 authors = [{ name = "Brett Fitzpatrick", email = "brettfitz@protonmail.com" }]
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.11"
+requires-python = ">=3.15.2"
 keywords = ["aws", "aws-sso", "iam-identity-center", "credentials", "cli"]
 classifiers = [
     "Development Status :: 4 - Beta",
