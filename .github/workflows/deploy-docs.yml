@@ -63,7 +63,7 @@ jobs:
         uses: brett-fitz/devops/actions/setup-aws@main
 
       - name: Set up UV
-        uses: astral-sh/setup-uv@v10.3.3
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           enable-cache: true
 
