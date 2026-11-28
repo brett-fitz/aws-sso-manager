@@ -21,10 +21,10 @@ classifiers = [
     "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
-    "boto3>=1.44.3",
+    "boto3>=1.44.13",
     "click>=8.5.1",
     "coloredlogs>=15.0.1",
-    "pyyaml>=6.0.3",
+    "pyyaml>=6.0.4",
     "yamale>=6.1.0",
 ]
 
@@ -41,14 +41,14 @@ Changelog = "https://github.com/brett-fitz/aws-sso-manager/blob/main/CHANGELOG.m
 [project.optional-dependencies]
 saml = [
     "defusedxml>=0.7.1",
-    "httpx>=0.28.1",
+    "httpx>=0.29.0",
     "playwright>=1.65.2",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff>=0.17.5",
-    "ty>=0.0.104",
+    "ruff>=0.17.6",
+    "ty>=0.0.112",
     "types-defusedxml>=0.7.0.20260504",
 ]
 test = [
@@ -59,7 +59,7 @@ test = [
 ]
 docs = [
     "mkdocs>=1.6.1",
-    "mkdocs-material>=9.8.1",
+    "mkdocs-material>=9.8.2",
     "mkdocs-minify-plugin>=0.8.0",
     "mkdocs-table-reader-plugin>=4.0.2",
     "mkdocs-include-markdown-plugin>=7.3.2",
